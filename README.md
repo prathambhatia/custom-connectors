@@ -50,6 +50,12 @@ You don't need this if you've disabled the MCPs with `/mcp`.
 **An MCP loads every one of its tools into every session**, whether you use them or not. A connector
 loads one line until you ask for that app.
 
+<table>
+<tr><th>Before: 5 MCPs, ~232.8k tokens (23.3%)</th><th>After: 6 connectors, ~800 tokens (0.08%)</th></tr>
+<tr><td><img src="docs/before-mcps.png" alt="Before: MCP tool tokens per server in /context"></td>
+<td><img src="docs/after-connectors.png" alt="After: connector skill tokens in /context"></td></tr>
+</table>
+
 ![MCP tools vs custom connectors: 232.8k tokens (23.3%) down to ~650 (0.065%)](docs/mcp-vs-connectors.png)
 
 | App | MCP tools | **Before**: MCP tokens | of 1M | **After**: connector tokens | of 1M |
@@ -65,10 +71,6 @@ loads one line until you ask for that app.
 "before" is each MCP's tools added up from Claude Code's `/context`, "after" is from
 `claude plugin details`. The AWS connector adds ~150 more (there's no AWS MCP to compare), and using
 a connector adds 1k–2k for that session only.
-
-### After: the six connectors in `/context`
-
-![After: each connector loads ~90-150 tokens](docs/after-connectors.png)
 
 Run `/context` before and after to see your own numbers.
 
