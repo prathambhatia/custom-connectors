@@ -18,6 +18,10 @@ Nothing to do by hand: the first `cdt` call starts the bridge, which opens **its
 with a separate profile** (`~/.cache/chrome-devtools-mcp/chrome-profile`), exactly like the normal
 chrome-devtools MCP does. Logins you make in that window are remembered next time.
 
+**Already run a chrome-devtools MCP over HTTP** (your own relay or bridge)? Set `CDT_URL` to it, e.g.
+`export CDT_URL=http://127.0.0.1:4322/mcp` in `~/.zshrc`. The helper then uses that endpoint and never
+starts or stops a bridge itself.
+
 To drive the user's everyday Chrome instead, set `CDT_FLAGS=--autoConnect` before the first call, have
 them enable `chrome://inspect/#remote-debugging`, and click **Allow** when Chrome asks. Stop the bridge
 with `lsof -ti tcp:4330 | xargs kill`. **Never `pkill -f supergateway`**: it matches and kills the shell running it.
@@ -31,17 +35,18 @@ cdt_start() { [ "$(curl -s -m 2 -o /dev/null -w '%{http_code}' -X POST http://12
     --outputTransport streamableHttp --stateful --sessionTimeout 86400000 --port 4330 > ~/.cache/cdt-bridge/bridge.log 2>&1 &
   for i in $(seq 1 45); do grep -q "Listening on port 4330" ~/.cache/cdt-bridge/bridge.log 2>/dev/null && return 0; sleep 2; done
   echo "bridge failed to start, see ~/.cache/cdt-bridge/bridge.log"; return 1; }
-cdt() { local args=$2; [ -z "$args" ] && args='{}'; local U=http://127.0.0.1:4330/mcp F=~/.cache/cdt-bridge/sid
+cdt() { local args=$2; [ -z "$args" ] && args='{}'; local U=${CDT_URL:-http://127.0.0.1:4330/mcp} F=~/.cache/cdt-bridge/sid; mkdir -p ~/.cache/cdt-bridge
   local H=(-H "Content-Type: application/json" -H "Accept: application/json, text/event-stream")
   _cdt_init() { curl -s -D /tmp/cdt_h.txt -o /dev/null -m 60 -X POST $U "${H[@]}" -d '{"jsonrpc":"2.0","id":0,"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"claude","version":"1"}}}'
     grep -i '^mcp-session-id' /tmp/cdt_h.txt | cut -d' ' -f2 | tr -d '\r' > $F
     curl -s -o /dev/null -m 10 -X POST $U "${H[@]}" -H "Mcp-Session-Id: $(cat $F)" -d '{"jsonrpc":"2.0","method":"notifications/initialized"}'; }
   _cdt_call() { curl -s -m 120 -X POST $U "${H[@]}" -H "Mcp-Session-Id: $(cat $F 2>/dev/null)" -d "$(jq -cn --arg n "$1" --argjson a "$2" '{jsonrpc:"2.0",id:1,method:"tools/call",params:{name:$n,arguments:$a}}')"; }
-  [ "$(curl -s -m 2 -o /dev/null -w '%{http_code}' -X POST $U)" = 000 ] && { cdt_start || return 1; }
+  if [ "$(curl -s -m 2 -o /dev/null -w '%{http_code}' -X POST $U)" = 000 ]; then
+    [ -n "$CDT_URL" ] && { echo "ERROR: nothing answering at CDT_URL=$CDT_URL"; return 1; }; cdt_start || return 1; fi
   [ -s $F ] || _cdt_init
   local r; r=$(_cdt_call "$1" "$args")
   if ! printf %s "$r" | grep -q '^data: '; then _cdt_init; r=$(_cdt_call "$1" "$args"); fi
-  if printf %s "$r" | grep -q 'browser is already running'; then cdt_start force && _cdt_init && r=$(_cdt_call "$1" "$args"); fi
+  if [ -z "$CDT_URL" ] && printf %s "$r" | grep -q 'browser is already running'; then cdt_start force && _cdt_init && r=$(_cdt_call "$1" "$args"); fi
   printf %s "$r" | sed -n 's/^data: //p' | jq -r 'if .error then "ERROR: \(.error.message)" elif .result.isError then "TOOLERR: \([.result.content[]?.text]|join(" "))" else ([.result.content[]? | if .type=="text" then .text else "[\(.type)]" end]|join("\n")) end'; }
 # usage: cdt list_pages; cdt new_page '{"url":"https://example.com"}'
 ```
