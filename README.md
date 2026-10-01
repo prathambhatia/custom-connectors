@@ -4,14 +4,16 @@ Seven Claude Code skills that replace the **Slack, Fathom, ClickUp, Vercel, AWS 
 MCPs, and the reading side of the **Figma** MCP. Claude calls each app's API directly with `curl` (or the `aws`
 CLI), using your own login saved in your Mac's Keychain.
 
-## Install (2 commands, inside Claude Code)
+## Install (3 commands, inside Claude Code)
 
 ```
 /plugin marketplace add prathambhatia/custom-connectors
 /plugin install custom-connectors@custom-connectors
+/reload-plugins
 ```
 
-Start a new session and you're done. Nothing runs at install time: the skills are just
+`/reload-plugins` loads the skills into the session you're in (new sessions get them automatically;
+any other session already open needs it too, or a restart). Nothing runs at install time: the skills are just
 instructions Claude reads when you ask for that app. The files live in
 `~/.claude/plugins/` on your Mac, not in any of your project repos.
 
@@ -27,9 +29,10 @@ Updates don't arrive on their own. To get the latest version, run inside Claude 
 ```
 /plugin marketplace update custom-connectors
 /plugin update custom-connectors@custom-connectors
+/reload-plugins
 ```
 
-then restart Claude Code. `/plugin` shows the installed version.
+ `/plugin` shows the installed version.
 
 Skills show as `custom-connectors:slack`, `:fathom`, `:clickup`, `:vercel`, `:aws`, `:figma` and `:chrome-devtools`
 (before v1.2.0 they ended in `-connector`).
