@@ -120,7 +120,7 @@ browser by itself** and asks for one thing:
 
 | App | What opens | What you do |
 |---|---|---|
-| Slack | https://app.slack.com in Chrome | Sign in and say "done". Claude reads your session from Chrome (click **Allow** when macOS asks about "Chrome Safe Storage") |
+| Slack | https://app.slack.com in Chrome | Sign in and say "done". Claude finds **every workspace** you're signed into, in Chrome and the Slack desktop app (click **Allow** when macOS asks about "Chrome Safe Storage" or "Slack Safe Storage") |
 | Fathom | Fathom's API Access settings | Generate a key, paste it |
 | ClickUp | ClickUp's Apps settings | Click Generate under API Token, paste it |
 | Vercel | Vercel's Tokens page | Create a token, paste it |
@@ -131,6 +131,9 @@ browser by itself** and asks for one thing:
 For example, the first Fathom request opens the API page and replies with one line:
 `Please give your Fathom API key from here: https://fathom.video/customize#api-access-header`.
 If you're logged out of that app, its login page shows first.
+
+A pasted token is **tested before it's saved**; a wrong or partial one is rejected and you're asked again.
+If a saved token later stops working, the same page opens again.
 
 Tokens go into your Keychain and never leave your Mac. This repo contains no credentials.
 
@@ -145,7 +148,8 @@ the other, not both, or every skill shows up twice.
 
 ## Limits
 
-- **Mac only.** Logins live in the macOS Keychain, and Slack setup reads from Google Chrome.
+- **Mac only.** Logins live in the macOS Keychain. Slack setup reads Google Chrome and the Slack desktop app
+  (not Safari, Arc or Brave).
 - **Slack can't schedule messages** with a browser session token. Schedule from the Slack app.
 - **Vercel runtime logs are live only.** Old logs are in the Vercel dashboard.
 - **Figma is read-only.** No editing or design-to-code.

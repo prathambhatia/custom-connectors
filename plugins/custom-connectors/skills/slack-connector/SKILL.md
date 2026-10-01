@@ -15,7 +15,7 @@ Calls `https://slack.com/api/<method>` directly with your own Slack web session,
 2. If none (or any call returns `invalid_auth` / `token_expired` / `not_authed`), ask with exactly this one line (Slack has no token page; the session is read from Chrome):
    First open it for them in Chrome: `open -a "Google Chrome" https://app.slack.com`. Then ask:
    > Please sign in to Slack in the Chrome tab I just opened, then say done (click Allow if macOS asks)
-3. Once they say done, run the setup script below. It finds every signed-in workspace in Chrome,
+3. Once they say done, run the setup script below. It finds every signed-in workspace in Chrome and the Slack app,
    checks it with `auth.test`, and saves `slack-<workspace>-xoxc` and `slack-<workspace>-d` to the
    Keychain (`<workspace>` is the subdomain, e.g. `acme` for acme.slack.com). Nothing else is written anywhere.
 4. Report which workspaces were saved. If none, ask them to sign in at app.slack.com in Chrome and retry.
@@ -23,42 +23,55 @@ Calls `https://slack.com/api/<method>` directly with your own Slack web session,
 ```bash
 python3 - <<'PY'
 import glob, hashlib, json, os, re, shutil, sqlite3, subprocess, sys, tempfile, urllib.request, urllib.parse
-base = os.path.expanduser("~/Library/Application Support/Google/Chrome")
-pw = subprocess.run(["security","find-generic-password","-s","Chrome Safe Storage","-w"],capture_output=True,text=True).stdout.strip()
-if not pw: sys.exit("Couldn't read 'Chrome Safe Storage' from Keychain (click Allow when macOS asks).")
-key = hashlib.pbkdf2_hmac("sha1", pw.encode(), b"saltysalt", 1003, 16).hex()
-def cookie(profile):
-    tmp = tempfile.mktemp(); shutil.copy(os.path.join(profile,"Cookies"), tmp)
+SAVE = True
+def secret(name):
+    return subprocess.run(["security","find-generic-password","-s",name,"-w"],capture_output=True,text=True).stdout.strip()
+def cookie(cookies_db, pw):
+    if not pw or not os.path.exists(cookies_db): return None
+    key = hashlib.pbkdf2_hmac("sha1", pw.encode(), b"saltysalt", 1003, 16).hex()
+    tmp = tempfile.mktemp(); shutil.copy(cookies_db, tmp)
     db = sqlite3.connect(tmp); ver = int((db.execute("SELECT value FROM meta WHERE key='version'").fetchone() or [0])[0])
     row = db.execute("SELECT encrypted_value FROM cookies WHERE host_key='.slack.com' AND name='d'").fetchone(); db.close(); os.remove(tmp)
     if not row or row[0][:3] != b"v10": return None
     out = subprocess.run(["openssl","enc","-d","-aes-128-cbc","-K",key,"-iv","20"*16],input=row[0][3:],capture_output=True).stdout
     return (out[32:] if ver >= 24 else out).decode("utf8","ignore")
-def test(tok, c):
-    req = urllib.request.Request("https://slack.com/api/auth.test", data=b"", headers={"Authorization":f"Bearer {tok}","Cookie":f"d={urllib.parse.quote(c) if '%' not in c else c}"})
-    return json.load(urllib.request.urlopen(req))
+def tokens(base):
+    # Slack keeps tokens in Local Storage and IndexedDB; compaction can hide one, so read both
+    t = set(); files = glob.glob(base+"/Local Storage/leveldb/*") + glob.glob(base+"/IndexedDB/*slack.com*/**/*", recursive=True)
+    for f in files:
+        if os.path.isfile(f) and os.path.getsize(f) < 50_000_000:
+            t |= set(re.findall(rb"xoxc-[0-9A-Za-z-]{40,}", open(f,"rb").read()))
+    return t
+# every place a signed-in Slack session can live: each Chrome profile, plus the Slack desktop app
+chrome = os.path.expanduser("~/Library/Application Support/Google/Chrome")
+desktop = os.path.expanduser("~/Library/Application Support/Slack")
+sources = [(p, os.path.join(p,"Cookies"), "Chrome Safe Storage") for p in glob.glob(chrome+"/Default")+glob.glob(chrome+"/Profile *")]
+sources.append((desktop, os.path.join(desktop,"Cookies"), "Slack Safe Storage"))
 done = {}
-for prof in glob.glob(base+"/Default")+glob.glob(base+"/Profile *"):
-    if not os.path.exists(os.path.join(prof,"Cookies")): continue
-    c = cookie(prof)
+for base, cdb, keyname in sources:
+    if not os.path.exists(cdb): continue
+    c = cookie(cdb, secret(keyname))
     if not c: continue
-    toks = set()
-    for f in glob.glob(prof+"/Local Storage/leveldb/*.[lL]*"):
-        toks |= set(re.findall(rb"xoxc-[0-9A-Za-z-]{40,}", open(f,"rb").read()))
-    for t in toks:
-        r = test(t.decode(), c)
+    for t in tokens(base):
+        req = urllib.request.Request("https://slack.com/api/auth.test", data=b"", headers={"Authorization":f"Bearer {t.decode()}","Cookie":f"d={c if '%' in c else urllib.parse.quote(c)}"})
+        r = json.load(urllib.request.urlopen(req))
         ws = r.get("url","").split("//")[-1].split(".")[0]
         if not r.get("ok") or ws in done: continue
         done[ws] = r["user"]
-        if True:
+        if SAVE:
             for svc,val in ((f"slack-{ws}-xoxc",t.decode()),(f"slack-{ws}-d",c)):
                 subprocess.run(["security","add-generic-password","-a",os.environ["USER"],"-s",svc,"-T","/usr/bin/security","-w",val,"-U"],check=True)
-        print(f"saved: {ws} (team {r['team_id']}) as {r['user']}")
-if not done: print("No logged-in Slack workspace found. Open https://app.slack.com in Chrome, sign in, then rerun.")
+        src = "Slack app" if base == desktop else "Chrome " + os.path.basename(base)
+        print(f"{'saved' if SAVE else 'found'}: {ws} (team {r['team_id']}) as {r['user']}, from {src}")
+if not done: print("No signed-in Slack workspace found. Sign in to Slack in Chrome or the Slack app, then rerun.")
+else: print(f"{len(done)} workspace(s): {', '.join(done)}")
 PY
 ```
 
-Uses only macOS built-ins (`python3`, `openssl`, `security`). Chrome only; other browsers aren't read.
+Uses only macOS built-ins (`python3`, `openssl`, `security`). It reads **every Chrome profile and the
+Slack desktop app**, and saves each workspace that answers `auth.test`, so someone in five workspaces gets
+all five. macOS may ask to allow access to "Slack Safe Storage" too; click **Allow**. Other browsers
+(Safari, Arc, Brave) aren't read.
 
 ## The helper (paste into each Bash call, shell state doesn't persist)
 

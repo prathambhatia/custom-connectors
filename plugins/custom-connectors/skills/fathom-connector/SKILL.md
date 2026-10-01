@@ -17,12 +17,18 @@ recorded or that were shared with you.
    First open the page for them: `open "https://fathom.video/customize#api-access-header"` (opens in their default browser; if they're
    logged out they see that service's login page first, and may need to open the link again after). Then ask with this one line, optionally starting with "I've opened the … page in your browser.":
    > Please give your Fathom API key from here: https://fathom.video/customize#api-access-header
-3. Save it, then test (expect HTTP 200):
+3. **Test the token first, save only if it works.** Put what they pasted into `T` (single quotes),
+   never echo it back:
    ```bash
-   security add-generic-password -a "$USER" -s fathom-api-key -l "Fathom API Key" -T /usr/bin/security -w "<KEY>" -U
-   curl -s -o /dev/null -w '%{http_code}\n' -H "X-Api-Key: $(security find-generic-password -s fathom-api-key -w)" https://api.fathom.ai/external/v1/meetings
+   T='<PASTED>'; code=$(curl -s -o /dev/null -w '%{http_code}' -H "X-Api-Key: $T" https://api.fathom.ai/external/v1/meetings)
+   if [ "$code" = 200 ]; then security add-generic-password -a "$USER" -s fathom-api-key -l "Fathom API Key" -T /usr/bin/security -w "$T" -U && echo SAVED
+   else echo "REJECTED (HTTP $code)"; fi; unset T
    ```
-   Don't echo the key back in chat.
+   On `REJECTED`, nothing is saved. Tell them in one line and ask again:
+   > That token didn't work (HTTP <code>). Please copy it again from: https://fathom.video/customize#api-access-header
+
+   Common causes: a partial copy, extra spaces, or a token from another account. On `SAVED`, carry on
+   with what they originally asked.
 
 ## Auth
 

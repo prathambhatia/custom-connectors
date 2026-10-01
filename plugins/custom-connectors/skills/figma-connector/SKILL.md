@@ -20,12 +20,19 @@ This skill covers reading, rendering and comments only.
    First open the page for them: `open "https://www.figma.com/settings"` (opens in their default browser; if they're
    logged out they see that service's login page first, and may need to open the link again after). Then ask with this one line, optionally starting with "I've opened the … page in your browser.":
    > Please give your Figma personal access token from here: the Figma settings page I just opened, Security tab, Personal access tokens, Generate
-3. Save it, then check it with `fg GET v1/me` (shows the account it belongs to; tell them, since
-   comments will be posted as that account):
+3. **Test the token first, save only if it works.** Put what they pasted into `T` (single quotes),
+   never echo it back:
    ```bash
-   security add-generic-password -a "$USER" -s figma-token -l "Figma PAT" -T /usr/bin/security -w "<TOKEN>" -U
+   T='<PASTED>'; code=$(curl -s -o /dev/null -w '%{http_code}' -H "X-Figma-Token: $T" https://api.figma.com/v1/me)
+   if [ "$code" = 200 ]; then security add-generic-password -a "$USER" -s figma-token -l "Figma PAT" -T /usr/bin/security -w "$T" -U && echo SAVED
+   else echo "REJECTED (HTTP $code)"; fi; unset T
    ```
-   Don't echo the token back.
+   On `REJECTED`, nothing is saved. Tell them in one line and ask again:
+   > That token didn't work (HTTP <code>). Please copy it again from: https://www.figma.com/settings (Security tab)
+
+   Common causes: a partial copy, extra spaces, or a token from another account. On `SAVED`, carry on
+   with what they originally asked.
+4. Then `fg GET v1/me` and tell them which account it belongs to, since comments are posted as that account.
 
 ## Helper
 

@@ -16,13 +16,24 @@ Calls `https://api.vercel.com` directly with your own token. Doesn't need the `v
    First open the page for them: `open "https://vercel.com/account/settings/tokens"` (opens in their default browser; if they're
    logged out they see that service's login page first, and may need to open the link again after). Then ask with this one line, optionally starting with "I've opened the … page in your browser.":
    > Please give your Vercel access token from here: https://vercel.com/account/settings/tokens
-3. Save it, then find their team id (every call below needs it):
+3. **Test the token first, save only if it works.** Put what they pasted into `T` (single quotes),
+   never echo it back:
    ```bash
-   security add-generic-password -a "$USER" -s vercel-token -l "Vercel Token" -T /usr/bin/security -w "<TOKEN>" -U
+   T='<PASTED>'; code=$(curl -s -o /dev/null -w '%{http_code}' -H "Authorization: Bearer $T" https://api.vercel.com/v2/user)
+   if [ "$code" = 200 ]; then security add-generic-password -a "$USER" -s vercel-token -l "Vercel Token" -T /usr/bin/security -w "$T" -U && echo SAVED
+   else echo "REJECTED (HTTP $code)"; fi; unset T
+   ```
+   On `REJECTED`, nothing is saved. Tell them in one line and ask again:
+   > That token didn't work (HTTP <code>). Please copy it again from: https://vercel.com/account/settings/tokens
+
+   Common causes: a partial copy, extra spaces, or a token from another account. On `SAVED`, carry on
+   with what they originally asked.
+4. Then find their team id (every call below needs it):
+   ```bash
    v GET v2/user > u.json; jq -r '.user.username, .user.defaultTeamId' u.json
    v GET v2/teams > t.json; jq -r '.teams[]|"\(.id) \(.slug)"' t.json
    ```
-   Set `TEAM` to `defaultTeamId` (or the team they name) for the rest of the session. Don't echo the token.
+   Set `TEAM` to `defaultTeamId` (or the team they name) for the rest of the session.
 
 ## Helper
 
