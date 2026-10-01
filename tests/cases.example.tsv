@@ -1,0 +1,9 @@
+# name<TAB>request as a user would type it<TAB>regex the final answer must match
+# Copy to cases.tsv (git-ignored) and fill in your own workspaces, ids and expected facts.
+fathom-last	what are my last 3 fathom meetings? give title and date	<a meeting title you expect>
+slack-user	what's the slack user id of <a teammate> on <workspace>?	U[0-9A-Z]{8,}
+clickup-ws	which clickup workspaces am i in?	<your workspace name>
+vercel-projects	list my vercel projects	<one of your project names>
+aws-rds	what RDS databases are in the <profile> aws profile account?	<a db identifier>
+figma-pages	what pages are in this figma file? <figma url>	<a page name>
+chrome-title	open https://example.com in the browser, tell me the main heading, then close that tab	Example Domain
