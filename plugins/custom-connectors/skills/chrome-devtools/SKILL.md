@@ -19,7 +19,7 @@ with a separate profile** (`~/.cache/chrome-devtools-mcp/chrome-profile`), exact
 chrome-devtools MCP does. Logins you make in that window are remembered next time.
 
 **Already run a chrome-devtools MCP over HTTP** (your own relay or bridge)? Set `CDT_URL` to it, e.g.
-`export CDT_URL=http://127.0.0.1:4322/mcp` in `~/.zshrc`. The helper then uses that endpoint and never
+`"env": {"CDT_URL": "http://127.0.0.1:4322/mcp"}` in `~/.claude/settings.json` (Claude's shell doesn't read `~/.zshrc` exports). The helper then uses that endpoint and never
 starts or stops a bridge itself.
 
 To drive the user's everyday Chrome instead, set `CDT_FLAGS=--autoConnect` before the first call, have
