@@ -75,7 +75,7 @@ findch() { local ws=$1 name=$2 cur=""; while :; do
   cur=$(printf %s "$r" | jq -r '.response_metadata.next_cursor // empty'); [ -z "$cur" ] && return 1; done; }
 finduser() { local ws=$1 q=$2 cur=""; while :; do
   r=$(slack $ws users.list limit=1000 cursor=$cur)
-  printf %s "$r" | jq -r --arg q "$q" '.members[]|select(.deleted|not)|select(((.real_name//"")+" "+.name+" "+(.profile.display_name//""))|ascii_downcase|contains($q|ascii_downcase))|"\(.id) \(.real_name) @\(.name)"'
+  printf %s "$r" | jq -r --arg q "$q" '.members[]|select(.deleted|not)|select(((.real_name//"")+" "+.name+" "+(.profile.display_name//"")+" "+(.profile.email//""))|ascii_downcase|contains($q|ascii_downcase))|"\(.id) \(.real_name) @\(.name)"'
   cur=$(printf %s "$r" | jq -r '.response_metadata.next_cursor // empty'); [ -z "$cur" ] && return; done; }
 ```
 
@@ -96,7 +96,7 @@ If only one workspace is saved, use it; if several and the user didn't say which
 | Read thread | `slack $WS conversations.replies channel=$CH ts=$PARENT_TS` |
 | Search messages | `slack $WS search.messages "query=foo in:#general from:@someone" count=20 sort=timestamp` |
 | Find channel | `findch $WS <name>` (private channels have `G…` ids, not `C…`) |
-| Find user | `finduser $WS <name>`; by email: `users.list` + `select(.profile.email=="x@y.com")` |
+| Find user | `finduser $WS <name or email>` (pages through everyone; `users.lookupByEmail` is rejected for session tokens) |
 | Upload file | `slackfile $WS $CH <path> "<comment>" [thread_ts]` (below) |
 | Delete | message: `slack $WS chat.delete channel=$CH ts=$TS`; file: `slack $WS files.delete file=$FID` (own only; confirm first) |
 | Edit message | `slack $WS chat.update channel=$CH ts=$TS "text=$NEW"` |
