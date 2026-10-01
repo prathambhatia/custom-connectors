@@ -42,7 +42,7 @@ cu() { local m=$1 p=$2; shift 2; curl -s -X $m -H "Authorization: $(security fin
 # usage: cu GET task/abc123 > t.json; jq . t.json
 ```
 
-**Copy the commands below exactly; never guess an endpoint path.** If a call returns 404, the path is wrong: recheck this file, don't try variations.
+**Copy listed commands exactly; never guess an endpoint path.** For anything unlisted, see "Not in the table?". If a call returns 404, the path is wrong: recheck this file, don't try variations.
 
 
 Paste into each Bash call. Save responses to files and jq them; don't pipe JSON through zsh `echo`
@@ -80,6 +80,12 @@ after `/t/`.
 | Attachment | `curl -s -X POST -H "Authorization: $(security find-generic-password -s clickup-api-token -w)" -F "attachment=@file.pdf" https://api.clickup.com/api/v2/task/$T/attachment` (multipart, no JSON header) |
 | Custom fields | `cu GET list/$L/field`; set: `cu POST task/$T/field/$FID -d '{"value":"…"}'` |
 | Time entry: add / list / delete | `cu POST team/$TEAM/time_entries -d '{"tid":"'$T'","start":<ms>,"duration":<ms>}'`; `cu GET "team/$TEAM/time_entries?task_id=$T"`; `cu DELETE team/$TEAM/time_entries/$ID` |
+
+**Not in the table?** Only then (anything listed above: use it as written, no lookup):
+1. Find the page: `curl -s https://developer.clickup.com/llms.txt | grep -i <word>` lists every API page with a link.
+2. Read that one page (`curl -s <link>.md`) for the path and body, then call it with `cu`.
+Then make a **read-only** call first. For anything that creates, changes or deletes, show the exact call and
+ask before running it. If a looked-up call fails, re-read its doc page; don't try variations of the path.
 
 ## Units and traps
 

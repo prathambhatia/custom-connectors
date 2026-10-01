@@ -93,7 +93,7 @@ finduser() { local ws=$1 q=$2 cur=""; while :; do
   cur=$(printf %s "$r" | jq -r '.response_metadata.next_cursor // empty'); [ -z "$cur" ] && return; done; }
 ```
 
-**Copy the commands below exactly; never guess an endpoint path.** If a call returns 404, the path is wrong: recheck this file, don't try variations.
+**Copy listed commands exactly; never guess an endpoint path.** For anything unlisted, see "Not in the table?". If a call returns 404, the path is wrong: recheck this file, don't try variations.
 
 
 Never print the token or cookie. Save responses to a file or use `printf %s "$r"`, never zsh `echo` (it expands `\n` inside the JSON and jq fails). Check `.ok` on every response; on `false` read `.error`.
@@ -144,6 +144,13 @@ user didn't ask to send. After uploading, read back with `conversations.history 
 
 **Not supported with session tokens** (`not_allowed_token_type`): `chat.scheduleMessage` and
 `users.lookupByEmail`. Say so and suggest scheduling it in the Slack app.
+
+**Not in the table?** Only then (anything listed above: use it as written, no lookup):
+1. Find the method: fetch `https://api.slack.com/methods/<method>` (e.g. `bookmarks.list`) and read its
+   arguments. Call it with the `slack` helper as usual. If Slack answers `not_allowed_token_type`, session
+   tokens can't use that method: say so.
+Then make a **read-only** call first. For anything that creates, changes or deletes, show the exact call and
+ask before running it. If a looked-up call fails, re-read its doc page; don't try variations of the path.
 
 ## Rules
 

@@ -44,7 +44,7 @@ fg() { local m=$1 p=$2; shift 2; curl -s -X $m -H "X-Figma-Token: $(security fin
 # usage: fg GET "v1/files/$K?depth=2" > f.json; jq . f.json
 ```
 
-**Copy the commands below exactly; never guess an endpoint path.** If a call returns 404, the path is wrong: recheck this file, don't try variations.
+**Copy listed commands exactly; never guess an endpoint path.** For anything unlisted, see "Not in the table?". If a call returns 404, the path is wrong: recheck this file, don't try variations.
 
 
 Paste into each Bash call; save to files (Figma JSON is huge), never pipe through zsh `echo`. On
@@ -77,6 +77,12 @@ node id **`12:345`** (URL uses `-`, the API uses `:`). URL-encode ids in query s
 
 **Comments notify people and show the token owner's name.** Draft the text, confirm with
 the user before posting, and delete test comments straight away.
+
+**Not in the table?** Only then (anything listed above: use it as written, no lookup):
+1. Search Figma's OpenAPI spec: `curl -sL https://raw.githubusercontent.com/figma/rest-api-spec/main/openapi/openapi.yaml > /tmp/figma-openapi.yaml; grep -n '^  /v' /tmp/figma-openapi.yaml`
+2. Read that path's section (`sed -n '<line>,+60p' /tmp/figma-openapi.yaml`) for parameters, then call it with `fg`.
+Then make a **read-only** call first. For anything that creates, changes or deletes, show the exact call and
+ask before running it. If a looked-up call fails, re-read its doc page; don't try variations of the path.
 
 ## Not available with this token
 

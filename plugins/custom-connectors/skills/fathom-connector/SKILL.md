@@ -43,13 +43,19 @@ fathom() { local o=$(mktemp) c; c=$(curl -s -o $o -w '%{http_code}' -H "X-Api-Ke
 
 That helper expands to full URLs like `https://api.fathom.ai/external/v1/meetings`. **There is no `/my/` prefix** (`/v1/my/meetings` is a 404). Other paths: `/v1/recordings/<id>/summary`, `/v1/recordings/<id>/transcript`, `/v1/teams`, `/v1/team_members`, `/v1/meeting_types`.
 
-**Copy the commands below exactly; never guess an endpoint path.** If a call returns 404, the path is wrong: recheck this file, don't try variations.
+**Copy listed commands exactly; never guess an endpoint path.** For anything unlisted, see "Not in the table?". If a call returns 404, the path is wrong: recheck this file, don't try variations.
 
 
 Paste it into each Bash call (shell state doesn't persist). Never print the key. On 401, rerun setup.
 
 **Save responses to a file, don't pipe through `echo`.** Transcripts and summaries contain `\n`;
 zsh's `echo` expands them and jq fails with "control characters must be escaped".
+
+**Not in the table?** Only then (anything listed above: use it as written, no lookup):
+1. Find the page: `curl -s https://developers.fathom.ai/llms.txt | grep -i <word>` lists every API page with a link.
+2. Read that one page (`curl -s <link>`) for the path and parameters, then call it with `fathom`.
+Then make a **read-only** call first. For anything that creates, changes or deletes, show the exact call and
+ask before running it. If a looked-up call fails, re-read its doc page; don't try variations of the path.
 
 ## Quirks that silently mislead
 

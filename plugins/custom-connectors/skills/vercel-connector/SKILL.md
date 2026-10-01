@@ -44,7 +44,7 @@ v() { local m=$1 p=$2; shift 2; curl -s -X $m -H "Authorization: Bearer $(securi
 # usage: v GET "v10/projects?teamId=$TEAM&limit=20" > p.json; jq . p.json
 ```
 
-**Copy the commands below exactly; never guess an endpoint path.** If a call returns 404, the path is wrong: recheck this file, don't try variations.
+**Copy listed commands exactly; never guess an endpoint path.** For anything unlisted, see "Not in the table?". If a call returns 404, the path is wrong: recheck this file, don't try variations.
 
 
 Paste into each Bash call. Save to files, don't pipe JSON through zsh `echo`. Errors look like
@@ -115,6 +115,14 @@ v POST "v13/deployments?teamId=$TEAM&skipAutoDetectionConfirmation=1" -d @/tmp/v
 
 Drop `"target":"production"` for a preview. For a project linked to git, prefer pushing to the branch
 over uploading files. First deploy creates the project.
+
+**Not in the table?** Only then (anything listed above: use it as written, no lookup):
+1. Search Vercel's OpenAPI spec locally (it's 11 MB, never read it whole):
+   `curl -s https://openapi.vercel.sh/ > /tmp/vercel-openapi.json; jq -r '.paths|keys[]' /tmp/vercel-openapi.json | grep -i <word>`
+2. Read just that path's parameters: `jq '.paths["/v2/domains/{domain}/records"]' /tmp/vercel-openapi.json`
+3. Call it with the `v` helper, adding `teamId=$TEAM`.
+Then make a **read-only** call first. For anything that creates, changes or deletes, show the exact call and
+ask before running it. If a looked-up call fails, re-read its doc page; don't try variations of the path.
 
 ## Traps
 
