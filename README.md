@@ -47,36 +47,29 @@ You don't need this if you've disabled the MCPs with `/mcp`.
 
 ## Why this beats the MCPs
 
-**An MCP loads every one of its tools into every session**, whether you use them or not:
+**An MCP loads every one of its tools into every session**, whether you use them or not. A connector
+loads one line until you ask for that app.
 
-| MCP | Tools it loads | Before: MCP tokens | **Before** (share of 1M) | After: connector tokens | **After** (share of 1M) |
+![MCP tools vs custom connectors: 232.8k tokens (23.3%) down to ~650 (0.065%)](docs/mcp-vs-connectors.png)
+
+| App | MCP tools | **Before**: MCP tokens | of 1M | **After**: connector tokens | of 1M |
 |---|---|---|---|---|---|
-| Vercel | 244 | **166.0k (measured)** | **16.6%** | ~140 | **0.014%** |
-| ClickUp | 65 | ~30k | **3.0%** | ~130 | **0.013%** |
-| Figma | 45 | ~20k | **2.0%** | ~150 | **0.015%** |
-| Slack | 19 | **16.2k (measured)** | **1.6%** | ~90 | **0.009%** |
-| Fathom | 9 | ~3k | **0.3%** | ~140 | **0.014%** |
-| **Total (5 MCPs)** | **382** | **~235k** | **~23.5%** | **~650** | **~0.07%** |
+| Vercel | 244 | 166.0k | **16.6%** | ~140 | **0.014%** |
+| ClickUp | 61 | 23.3k | **2.3%** | ~130 | **0.013%** |
+| Figma | 40 | 24.5k | **2.5%** | ~150 | **0.015%** |
+| Slack | 19 | 16.2k | **1.6%** | ~90 | **0.009%** |
+| Fathom | 9 | 2.8k | **0.3%** | ~140 | **0.014%** |
+| **Total** | **373** | **232.8k** | **23.3%** | **~650** | **0.065%** |
 
-**Before ~23.5% → after ~0.07% of a 1M context**, so close to a quarter of the window comes back in
-every session. The AWS connector adds another ~150 tokens (it has no MCP to compare against), for
-~800 total.
+**Before 23.3% → after 0.065% of a 1M context, about 358× smaller.** All numbers are measured:
+"before" is each MCP's tools added up from Claude Code's `/context`, "after" is from
+`claude plugin details`. The AWS connector adds ~150 more (there's no AWS MCP to compare), and using
+a connector adds 1k–2k for that session only.
 
-### Before: real `/context` with the Vercel and Slack MCPs on
-
-![Before: /context showing MCP tools using 25.9% of the context](docs/before-mcps.png)
-
-Numbers taken from Claude Code's own `/context` output (Vercel 244 tools = 166.0k tokens, Slack 19
-tools = 16.2k). That session also had Postman, Gmail and other MCPs on, which is why "MCP tools"
-reads 25.9% overall.
-
-### After: the six connectors
+### After: the six connectors in `/context`
 
 ![After: each connector loads ~90-150 tokens](docs/after-connectors.png)
 
-Vercel and Slack "before" are measured with `/context`. ClickUp, Figma and Fathom weren't logged in
-when this was captured, so theirs are estimated from tool counts. "After" is measured by Claude Code
-with `claude plugin details`; a connector adds 1k–2k more only in a session that actually uses it.
 Run `/context` before and after to see your own numbers.
 
 - **Faster:** no MCP server in between, Claude calls the app's API directly.
