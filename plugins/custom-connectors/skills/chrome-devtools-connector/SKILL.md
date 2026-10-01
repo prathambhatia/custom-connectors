@@ -55,6 +55,11 @@ or argument names, they're all in the table below. If the session is lost the he
   `grep -n 'button "Save"' /tmp/snap_<what>.txt` for the uid. Real pages are 100k+ characters.
 - **A uid dies at the next view change** (navigation, tab switch, panel toggle). Re-snapshot after
   every change.
+- **To read text off a page, snapshot first** and grep it (`grep -n 'heading' /tmp/snap_x.txt`). Don't guess CSS
+  selectors in `evaluate_script`; if you must, use `?.` (`document.querySelector("h1")?.textContent`) so a missing
+  element returns null instead of throwing.
+- **One browser session at a time.** Two Claude sessions driving the bridge at once fight over port 4330
+  and the Chrome profile (the normal chrome-devtools MCP has the same limit).
 - `take_screenshot` with `filePath`, then Read the PNG to see it. Cheaper than a snapshot for reading.
 - Don't touch tabs you didn't open unless asked. `close_page` the ones you open.
 

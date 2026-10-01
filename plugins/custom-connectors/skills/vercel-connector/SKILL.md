@@ -13,6 +13,8 @@ Calls `https://api.vercel.com` directly with your own token. Doesn't need the `v
 
 1. Check: `security find-generic-password -s vercel-token -w >/dev/null 2>&1 && echo ok`.
 2. If missing (or any call returns 401), ask with exactly this one line, nothing more:
+   First open the page for them: `open "https://vercel.com/account/settings/tokens"` (opens in their default browser; if they're
+   logged out they see that service's login page first, and may need to open the link again after). Then ask:
    > Please give your Vercel access token from here: https://vercel.com/account/settings/tokens
 3. Save it, then find their team id (every call below needs it):
    ```bash

@@ -14,6 +14,8 @@ recorded or that were shared with you.
 
 1. Check: `security find-generic-password -s fathom-api-key -w >/dev/null 2>&1 && echo ok`.
 2. If missing (or any call returns 401), ask with exactly this one line, nothing more:
+   First open the page for them: `open "https://fathom.video/customize#api-access-header"` (opens in their default browser; if they're
+   logged out they see that service's login page first, and may need to open the link again after). Then ask:
    > Please give your Fathom API key from here: https://fathom.video/customize#api-access-header
 3. Save it, then test (expect HTTP 200):
    ```bash

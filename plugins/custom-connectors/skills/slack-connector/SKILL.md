@@ -13,7 +13,8 @@ Calls `https://slack.com/api/<method>` directly with your own Slack web session,
 
 1. Check for saved credentials: `security dump-keychain | grep -o '"slack-[a-z0-9-]*-xoxc"'`.
 2. If none (or any call returns `invalid_auth` / `token_expired` / `not_authed`), ask with exactly this one line (Slack has no token page; the session is read from Chrome):
-   > Please open https://app.slack.com in Chrome, sign in, and say done (click Allow if macOS asks)
+   First open it for them in Chrome: `open -a "Google Chrome" https://app.slack.com`. Then ask:
+   > Please sign in to Slack in the Chrome tab I just opened, then say done (click Allow if macOS asks)
 3. Once they say done, run the setup script below. It finds every signed-in workspace in Chrome,
    checks it with `auth.test`, and saves `slack-<workspace>-xoxc` and `slack-<workspace>-d` to the
    Keychain (`<workspace>` is the subdomain, e.g. `acme` for acme.slack.com). Nothing else is written anywhere.
