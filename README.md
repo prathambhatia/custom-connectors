@@ -22,6 +22,18 @@ designs or use design-to-code; the Figma connector only reads.
 
 Update later with `/plugin marketplace update custom-connectors`.
 
+## Optional: make Claude always pick the connectors
+
+If you keep any of these MCPs switched on, Claude might occasionally use an MCP tool instead of the
+connector. To rule that out, add this line to your global `~/.claude/CLAUDE.md`:
+
+```
+For Slack, Fathom, ClickUp, Vercel and AWS, use the custom-connectors skills instead of the MCPs.
+For Figma, use figma-connector for reading, and the Figma MCP only for editing or design-to-code.
+```
+
+You don't need this if you've disabled the MCPs with `/mcp`.
+
 ## What each one does
 
 | Connector | What Claude can do |
