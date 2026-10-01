@@ -65,8 +65,8 @@ loads one line until you ask for that app.
 
 <table>
 <tr><th>Before: 6 MCPs, ~239.8k tokens (24.0%)</th><th>After: 7 connectors, ~1.5k tokens (0.15%)</th></tr>
-<tr><td><img src="docs/before-mcps.png" alt="Before: MCP tool tokens per server in /context"></td>
-<td><img src="docs/after-connectors.png" alt="After: connector skill tokens in /context"></td></tr>
+<tr><td><img src="docs/before-mcps-v2.png" alt="Before: MCP tool tokens per server in /context"></td>
+<td><img src="docs/after-connectors-v2.png" alt="After: connector skill tokens in /context"></td></tr>
 </table>
 
 ![MCP tools vs custom connectors: 239.8k tokens (24.0%) down to ~1.3k (0.13%)](docs/mcp-vs-connectors.png)
