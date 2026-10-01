@@ -51,20 +51,33 @@ You don't need this if you've disabled the MCPs with `/mcp`.
 
 | MCP | Tools it loads | Before: MCP tokens | **Before** (share of 1M) | After: connector tokens | **After** (share of 1M) |
 |---|---|---|---|---|---|
-| Vercel | 244 | ~145k (measured) | **14.5%** | ~140 | **0.014%** |
+| Vercel | 244 | **166.0k (measured)** | **16.6%** | ~140 | **0.014%** |
 | ClickUp | 65 | ~30k | **3.0%** | ~130 | **0.013%** |
 | Figma | 45 | ~20k | **2.0%** | ~150 | **0.015%** |
-| Slack | 19 | ~10k | **1.0%** | ~90 | **0.009%** |
+| Slack | 19 | **16.2k (measured)** | **1.6%** | ~90 | **0.009%** |
 | Fathom | 9 | ~3k | **0.3%** | ~140 | **0.014%** |
-| **Total (5 MCPs)** | **382** | **~208k** | **~21%** | **~650** | **~0.07%** |
+| **Total (5 MCPs)** | **382** | **~235k** | **~23.5%** | **~650** | **~0.07%** |
 
-**Before ~21% → after ~0.07% of a 1M context**, so about a fifth of the window comes back in every
-session. The AWS connector adds another ~150 tokens (it has no MCP to compare against), for ~800 total.
+**Before ~23.5% → after ~0.07% of a 1M context**, so close to a quarter of the window comes back in
+every session. The AWS connector adds another ~150 tokens (it has no MCP to compare against), for
+~800 total.
 
-"After" is what loads in every session, measured by Claude Code itself with `claude plugin details`.
-When you actually use a connector, that one adds 1k–2k tokens for that session only. Vercel's "before"
-was measured by fetching its full tool list; the other "before" numbers are estimated from their tool
-counts. Run `/context` before and after to see your own numbers.
+### Before: real `/context` with the Vercel and Slack MCPs on
+
+![Before: /context showing MCP tools using 25.9% of the context](docs/before-mcps.png)
+
+Numbers taken from Claude Code's own `/context` output (Vercel 244 tools = 166.0k tokens, Slack 19
+tools = 16.2k). That session also had Postman, Gmail and other MCPs on, which is why "MCP tools"
+reads 25.9% overall.
+
+### After: the six connectors
+
+![After: each connector loads ~90-150 tokens](docs/after-connectors.png)
+
+Vercel and Slack "before" are measured with `/context`. ClickUp, Figma and Fathom weren't logged in
+when this was captured, so theirs are estimated from tool counts. "After" is measured by Claude Code
+with `claude plugin details`; a connector adds 1k–2k more only in a session that actually uses it.
+Run `/context` before and after to see your own numbers.
 
 - **Faster:** no MCP server in between, Claude calls the app's API directly.
 - **Acts as you:** your own token, so messages and comments show your name.
