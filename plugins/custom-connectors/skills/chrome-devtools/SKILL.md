@@ -1,5 +1,5 @@
 ---
-name: chrome-devtools-connector
+name: chrome-devtools
 description: ALWAYS use this instead of the chrome-devtools MCP whenever the browser or Chrome is involved — open/navigate a URL, read a page, click, fill a form, type, take a screenshot or snapshot, read console logs or network requests, run JS on a page, emulate a device, Lighthouse audit — by calling a local chrome-devtools bridge with curl, so none of the 27 tool schemas load into context. Sets itself up on first use; no token needed.
 user-invocable: true
 argument-hint: "what to do in the browser"

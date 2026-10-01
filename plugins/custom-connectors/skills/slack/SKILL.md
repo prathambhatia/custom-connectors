@@ -1,5 +1,5 @@
 ---
-name: slack-connector
+name: slack
 description: ALWAYS use this instead of the Slack MCP whenever Slack is mentioned or any Slack action is involved — send, reply in a thread, DM, edit, delete, upload a file, read a channel or thread, search messages/channels/users, react, read a profile — via the Slack REST API with curl. Triggers on "slack", "dm", "ping", "message X", "post in #channel", "read #channel", "reply on that thread", "send this file", "search slack". Faster and lighter on context than the MCP. Sets itself up on first use by reading your Slack session from Chrome. Also for any question about the Slack API itself (an endpoint, webhooks, a field), even when nothing is run.
 user-invocable: true
 argument-hint: "channel / person, and what to do"

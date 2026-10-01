@@ -31,6 +31,9 @@ Updates don't arrive on their own. To get the latest version, run inside Claude 
 
 then restart Claude Code. `/plugin` shows the installed version.
 
+Skills show as `custom-connectors:slack`, `:fathom`, `:clickup`, `:vercel`, `:aws`, `:figma` and `:chrome-devtools`
+(before v1.2.0 they ended in `-connector`).
+
 ## Optional: make Claude always pick the connectors
 
 If you keep any of these MCPs switched on, Claude might occasionally use an MCP tool instead of the
@@ -38,7 +41,7 @@ connector. To rule that out, add this line to your global `~/.claude/CLAUDE.md`:
 
 ```
 For Slack, Fathom, ClickUp, Vercel, AWS and Chrome DevTools, use the custom-connectors skills instead of the MCPs.
-For Figma, use figma-connector for reading, and the Figma MCP only for editing or design-to-code.
+For Figma, use figma for reading, and the Figma MCP only for editing or design-to-code.
 ```
 
 You don't need this if you've disabled the MCPs with `/mcp`.
@@ -47,13 +50,13 @@ You don't need this if you've disabled the MCPs with `/mcp`.
 
 | Connector | What Claude can do |
 |---|---|
-| **slack-connector** | Send, reply in threads, DM, edit, delete, upload files, read channels and threads, search messages, find channels and people, react, read profiles |
-| **fathom-connector** | List your meetings, find one by title, person, company or date, get the summary, transcript and action items, search what was said across calls |
-| **clickup-connector** | Create, update, search and delete tasks, comments, tags, checklists, attachments, custom fields, subtasks and time entries |
-| **vercel-connector** | Deploy, redeploy, check status, read build and live runtime logs, manage env vars, promote or roll back, list domains. No Vercel CLI needed |
-| **aws-connector** | SSO login, SSM tunnels to private databases, Run Command, Parameter Store, logs and Logs Insights, ECS, RDS, Secrets Manager, S3, CloudFront, Lambda, costs, and anything else the aws CLI can do |
-| **chrome-devtools-connector** | Drive Chrome: open pages, click, fill forms, type, upload files, screenshots, snapshots, console and network logs, run JS, emulate devices, Lighthouse. Same official chrome-devtools-mcp under the hood, started on first use; no token |
-| **figma-connector** | Read pages, frames and node details, render frames to PNG/SVG, version history, read and post comments. **Read-only** |
+| **slack** | Send, reply in threads, DM, edit, delete, upload files, read channels and threads, search messages, find channels and people, react, read profiles |
+| **fathom** | List your meetings, find one by title, person, company or date, get the summary, transcript and action items, search what was said across calls |
+| **clickup** | Create, update, search and delete tasks, comments, tags, checklists, attachments, custom fields, subtasks and time entries |
+| **vercel** | Deploy, redeploy, check status, read build and live runtime logs, manage env vars, promote or roll back, list domains. No Vercel CLI needed |
+| **aws** | SSO login, SSM tunnels to private databases, Run Command, Parameter Store, logs and Logs Insights, ECS, RDS, Secrets Manager, S3, CloudFront, Lambda, costs, and anything else the aws CLI can do |
+| **chrome-devtools** | Drive Chrome: open pages, click, fill forms, type, upload files, screenshots, snapshots, console and network logs, run JS, emulate devices, Lighthouse. Same official chrome-devtools-mcp under the hood, started on first use; no token |
+| **figma** | Read pages, frames and node details, render frames to PNG/SVG, version history, read and post comments. **Read-only** |
 
 ## Why this beats the MCPs
 

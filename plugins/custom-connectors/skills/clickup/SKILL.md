@@ -1,5 +1,5 @@
 ---
-name: clickup-connector
+name: clickup
 description: ALWAYS use this instead of the ClickUp MCP whenever ClickUp is mentioned or a ClickUp task, list, ticket, comment, tag, status, assignee, checklist, attachment, custom field or time entry is involved — create, read, update, search, comment, tag, delete — via the ClickUp REST API with curl and your own token. Triggers on "clickup", "ticket", "task", "move it to qa", "comment on the ticket", "what's on my board". Faster and lighter on context than the MCP. Sets itself up on first use. Also for any question about the ClickUp API itself (an endpoint, webhooks, a field), even when nothing is run.
 user-invocable: true
 argument-hint: "task / list / what to do"

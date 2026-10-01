@@ -1,5 +1,5 @@
 ---
-name: aws-connector
+name: aws
 description: ALWAYS use this instead of any AWS MCP whenever AWS is mentioned — SSO login, SSM Session Manager tunnels and Run Command, Parameter Store, CloudWatch logs and Logs Insights, ECS services/tasks/deploys/exec, ECR, RDS, ElastiCache, Secrets Manager, S3, EC2, ALB, CloudFront, Lambda, SQS/SNS, DynamoDB, Route53, ACM, IAM, CloudTrail, Cost Explorer — via the aws CLI and your own AWS profiles. Triggers on "aws", "tunnel into RDS", "check the logs", "ecs", "restart the service", "what is deployed", "secrets", "ssm", "s3", "cloudfront", "aws bill". Sets itself up on first use.
 user-invocable: true
 argument-hint: "profile/env + what to do"
