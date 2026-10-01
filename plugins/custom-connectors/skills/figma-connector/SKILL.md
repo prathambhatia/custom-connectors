@@ -16,7 +16,7 @@ This skill covers reading, rendering and comments only.
 ## First run: setup (do this automatically)
 
 1. Check: `security find-generic-password -s figma-token -w >/dev/null 2>&1 && echo ok`.
-2. If missing (or a call returns 401):
+2. If missing, or a call returns `{"status":401,"err":"Invalid token"}` (or "Token has expired"):
    First open the page for them: `open "https://www.figma.com/settings"` (opens in their default browser; if they're
    logged out they see that service's login page first, and may need to open the link again after). Then ask with this one line, optionally starting with "I've opened the … page in your browser.":
    > Please give your Figma personal access token from here: the Figma settings page I just opened, Security tab, Personal access tokens, Generate

@@ -12,7 +12,7 @@ Calls `https://api.vercel.com` directly with your own token. Doesn't need the `v
 ## First run: setup (do this automatically)
 
 1. Check: `security find-generic-password -s vercel-token -w >/dev/null 2>&1 && echo ok`.
-2. If missing (or any call returns 401):
+2. If missing, or a call returns 401, or 403 with `"invalidToken":true` (Vercel's reply to a stale token):
    First open the page for them: `open "https://vercel.com/account/settings/tokens"` (opens in their default browser; if they're
    logged out they see that service's login page first, and may need to open the link again after). Then ask with this one line, optionally starting with "I've opened the … page in your browser.":
    > Please give your Vercel access token from here: https://vercel.com/account/settings/tokens
@@ -37,7 +37,7 @@ v() { local m=$1 p=$2; shift 2; curl -s -X $m -H "Authorization: Bearer $(securi
 
 
 Paste into each Bash call. Save to files, don't pipe JSON through zsh `echo`. Errors look like
-`{"error":{"code":…,"message":…}}`. On 401, rerun setup.
+`{"error":{"code":…,"message":…}}`. On 401, or 403 with `invalidToken`, rerun setup.
 
 ## Operations
 

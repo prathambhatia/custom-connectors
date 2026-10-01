@@ -13,7 +13,7 @@ recorded or that were shared with you.
 ## First run: setup (do this automatically)
 
 1. Check: `security find-generic-password -s fathom-api-key -w >/dev/null 2>&1 && echo ok`.
-2. If missing (or any call returns 401):
+2. If missing, or the helper prints `AUTH_EXPIRED` (Fathom's 401 has an empty body, so the helper flags it):
    First open the page for them: `open "https://fathom.video/customize#api-access-header"` (opens in their default browser; if they're
    logged out they see that service's login page first, and may need to open the link again after). Then ask with this one line, optionally starting with "I've opened the … page in your browser.":
    > Please give your Fathom API key from here: https://fathom.video/customize#api-access-header
@@ -29,8 +29,9 @@ recorded or that were shared with you.
 Send the key as **`X-Api-Key`**. `Authorization: Bearer` returns 401.
 
 ```bash
-fathom() { curl -s -H "X-Api-Key: $(security find-generic-password -s fathom-api-key -w)" \
-  "https://api.fathom.ai/external/v1/$1"; }
+fathom() { local o=$(mktemp) c; c=$(curl -s -o $o -w '%{http_code}' -H "X-Api-Key: $(security find-generic-password -s fathom-api-key -w)" \
+  "https://api.fathom.ai/external/v1/$1"); [ "$c" = 401 ] && { echo "AUTH_EXPIRED: Fathom rejected the key (401), run first-run setup"; rm -f $o; return 1; }
+  cat $o; rm -f $o; }
 # usage: fathom 'meetings?created_after=2026-09-25T00:00:00Z' | jq .
 ```
 
