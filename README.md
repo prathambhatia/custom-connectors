@@ -64,27 +64,27 @@ You don't need this if you've disabled the MCPs with `/mcp`.
 loads one line until you ask for that app.
 
 <table>
-<tr><th>Before: 6 MCPs, ~239.8k tokens (24.0%)</th><th>After: 7 connectors, ~915 tokens (0.09%)</th></tr>
+<tr><th>Before: 6 MCPs, ~239.8k tokens (24.0%)</th><th>After: 7 connectors, ~1.5k tokens (0.15%)</th></tr>
 <tr><td><img src="docs/before-mcps.png" alt="Before: MCP tool tokens per server in /context"></td>
 <td><img src="docs/after-connectors.png" alt="After: connector skill tokens in /context"></td></tr>
 </table>
 
-![MCP tools vs custom connectors: 239.8k tokens (24.0%) down to ~770 (0.077%)](docs/mcp-vs-connectors.png)
+![MCP tools vs custom connectors: 239.8k tokens (24.0%) down to ~1.3k (0.13%)](docs/mcp-vs-connectors.png)
 
 | App | MCP tools | **Before**: MCP tokens | of 1M | **After**: connector tokens | of 1M |
 |---|---|---|---|---|---|
-| Vercel | 244 | 166.0k | **16.6%** | ~140 | **0.014%** |
-| Figma | 40 | 24.5k | **2.5%** | ~150 | **0.015%** |
-| ClickUp | 61 | 23.3k | **2.3%** | ~130 | **0.013%** |
-| Slack | 19 | 16.2k | **1.6%** | ~90 | **0.009%** |
-| Chrome DevTools | 27 | 7.0k | **0.7%** | ~120 | **0.012%** |
-| Fathom | 9 | 2.8k | **0.3%** | ~140 | **0.014%** |
-| **Total** | **400** | **239.8k** | **24.0%** | **~770** | **0.077%** |
+| Vercel | 244 | 166.0k | **16.6%** | ~250 | **0.025%** |
+| Figma | 40 | 24.5k | **2.5%** | ~260 | **0.026%** |
+| ClickUp | 61 | 23.3k | **2.3%** | ~240 | **0.024%** |
+| Slack | 19 | 16.2k | **1.6%** | ~140 | **0.014%** |
+| Chrome DevTools | 27 | 7.0k | **0.7%** | ~180 | **0.018%** |
+| Fathom | 9 | 2.8k | **0.3%** | ~250 | **0.025%** |
+| **Total** | **400** | **239.8k** | **24.0%** | **~1.3k** | **0.13%** |
 
-**Before 24.0% → after 0.077% of a 1M context, about 311× smaller.** All numbers are measured:
+**Before 24.0% → after 0.13% of a 1M context, about 184× smaller.** All numbers are measured:
 "before" is each MCP's tools added up from Claude Code's `/context`, "after" is from
-`claude plugin details`. The AWS connector adds ~150 more (there's no AWS MCP to compare), for ~915
-total, and using a connector adds 1k–2k for that session only.
+`claude plugin details`. The AWS connector adds ~230 more (there's no AWS MCP to compare), for ~1.5k
+total, and using a connector adds 3k–5k for that session only.
 
 Run `/context` before and after to see your own numbers.
 
