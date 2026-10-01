@@ -14,7 +14,10 @@ the traps, not a wrapper. Everything runs as **your** AWS login.
 
 1. `aws --version`. If missing, tell the user: `brew install awscli`.
 2. `aws configure list-profiles`. For each profile: `aws sts get-caller-identity --profile <p> --query '[Account,Arn]' --output text`.
-   - `Token has expired` / `SSO session` errors → ask the user to run `! aws sso login --profile <p>` (opens a browser).
+   - `Token has expired` / `SSO session` errors → run `aws sso login --profile <p>` yourself (it opens the AWS
+     login page in their browser and waits up to a few minutes). Tell them in one line:
+     > Please approve the AWS login in the browser tab that just opened
+     Then retry the command.
    - No profiles → ask with exactly this one line:
      > Please give your AWS SSO start URL and region from here: your AWS access portal link (from DevOps), e.g. https://xxxx.awsapps.com/start
      then have them run `! aws configure sso`.

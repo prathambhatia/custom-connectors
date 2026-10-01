@@ -20,7 +20,16 @@ Type `/mcp`, pick each of Slack, Fathom, ClickUp, Vercel, AWS and chrome-devtool
 through claude.ai are under claude.ai, Settings, Connectors. **Keep the Figma MCP** if you edit
 designs or use design-to-code; the Figma connector only reads.
 
-Update later with `/plugin marketplace update custom-connectors`.
+### Updating
+
+Updates don't arrive on their own. To get the latest version, run inside Claude Code:
+
+```
+/plugin marketplace update custom-connectors
+/plugin update custom-connectors@custom-connectors
+```
+
+then restart Claude Code. `/plugin` shows the installed version.
 
 ## Optional: make Claude always pick the connectors
 
@@ -80,19 +89,48 @@ Run `/context` before and after to see your own numbers.
 - **Acts as you:** your own token, so messages and comments show your name.
 - **Works on any Claude account:** your logins live in your Mac's Keychain.
 
+## Reliability (measured)
+
+Each request below was run through a fresh Claude Code session with only this plugin installed and
+every MCP switched off, then checked automatically: did the final answer contain the right fact, and
+did any API call fail along the way.
+
+| Connector | Runs | Task done | No failed call on the way |
+|---|---|---|---|
+| Fathom | 10 | 100% | 100% |
+| AWS | 9 | 100% | 100% |
+| Slack | 8 | 100% | 100% |
+| ClickUp | 6 | 100% | 100% |
+| Vercel | 6 | 100% | 100% |
+| Figma | 6 | 100% | 100% |
+| Chrome DevTools | 3 | 100% | 100% |
+| **Total** | **48** | **100%** | **100%** |
+
+The first round (44 runs) completed every task but had a failed call along the way in 6 of them
+(**86%** clean). Those exposed 3 real bugs, all fixed in v1.1.1–1.1.2: the Chrome bridge killed its
+own shell, Fathom's paging used fixed temp file names that collided between sessions, and Claude
+invented an invalid AWS log filter that the skill now documents. The table shows the latest version.
+It's a small sample (2 to 3 runs per request, 22 requests), so treat it as "solid", not "perfect":
+expired logins and API changes can still make a call fail.
+
 ## First use
 
-Just ask Claude to do something on that app. The first time, it asks for one thing:
+Just ask Claude to do something on that app. The first time, **Claude opens the right page in your
+browser by itself** and asks for one thing:
 
-| App | What it asks for |
-|---|---|
-| Slack | Open https://app.slack.com in Chrome and sign in. Claude reads your session from Chrome (click **Allow** when macOS asks about "Chrome Safe Storage") |
-| Fathom | API key from https://fathom.video/customize#api-access-header |
-| ClickUp | Personal token from https://app.clickup.com/settings/apps |
-| Vercel | Token from https://vercel.com/account/settings/tokens |
-| Figma | Personal access token from Figma, Settings, Security |
-| Chrome DevTools | Nothing. Needs Node.js; the first browser request starts it and opens its own Chrome window |
-| AWS | Nothing if you already use the `aws` CLI with SSO; otherwise your SSO start URL |
+| App | What opens | What you do |
+|---|---|---|
+| Slack | https://app.slack.com in Chrome | Sign in and say "done". Claude reads your session from Chrome (click **Allow** when macOS asks about "Chrome Safe Storage") |
+| Fathom | Fathom's API Access settings | Generate a key, paste it |
+| ClickUp | ClickUp's Apps settings | Click Generate under API Token, paste it |
+| Vercel | Vercel's Tokens page | Create a token, paste it |
+| Figma | Figma settings | Security tab, generate a personal access token, paste it |
+| AWS | AWS's SSO login page (when your login has expired) | Approve it. Needs the `aws` CLI with your SSO profiles set up |
+| Chrome DevTools | Its own Chrome window | Nothing. Needs Node.js |
+
+For example, the first Fathom request opens the API page and replies with one line:
+`Please give your Fathom API key from here: https://fathom.video/customize#api-access-header`.
+If you're logged out of that app, its login page shows first.
 
 Tokens go into your Keychain and never leave your Mac. This repo contains no credentials.
 
@@ -114,4 +152,6 @@ the other, not both, or every skill shows up twice.
 - **AWS writes to production always ask twice** before running.
 - **Chrome DevTools opens its own Chrome window** (separate profile), like the normal MCP. To drive your
   everyday Chrome, see the skill's `--autoConnect` note.
+- **One browser session at a time.** Two Claude sessions can't drive the Chrome connector at once
+  (the normal chrome-devtools MCP has the same limit).
 - Needs `curl`, `jq` and `python3` (`brew install jq` if `jq` is missing), plus the `aws` CLI for AWS.
