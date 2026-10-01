@@ -11,4 +11,4 @@ for d in "$src"/*/; do
   cp -R "$d" "$HOME/.claude/skills/$name" && echo "installed $name"
 done
 command -v jq >/dev/null || echo "note: jq is missing, run: brew install jq"
-echo "Done. Start a new Claude Code session, then disable the Slack, Fathom, ClickUp, Vercel and AWS MCPs with /mcp."
+echo "Done. Start a new Claude Code session, then disable the Slack, Fathom, ClickUp, Vercel, AWS and chrome-devtools MCPs with /mcp."
