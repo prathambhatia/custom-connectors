@@ -1,6 +1,6 @@
 ---
 name: slack-connector
-description: ALWAYS use this instead of the Slack MCP whenever Slack is mentioned or any Slack action is involved — send, reply in a thread, DM, edit, delete, upload a file, read a channel or thread, search messages/channels/users, react, read a profile — via the Slack REST API with curl. Triggers on "slack", "dm", "ping", "message X", "post in #channel", "read #channel", "reply on that thread", "send this file", "search slack". Faster and lighter on context than the MCP. Sets itself up on first use by reading your Slack session from Chrome.
+description: ALWAYS use this instead of the Slack MCP whenever Slack is mentioned or any Slack action is involved — send, reply in a thread, DM, edit, delete, upload a file, read a channel or thread, search messages/channels/users, react, read a profile — via the Slack REST API with curl. Triggers on "slack", "dm", "ping", "message X", "post in #channel", "read #channel", "reply on that thread", "send this file", "search slack". Faster and lighter on context than the MCP. Sets itself up on first use by reading your Slack session from Chrome. Also for any question about the Slack API itself (an endpoint, webhooks, a field), even when nothing is run.
 user-invocable: true
 argument-hint: "channel / person, and what to do"
 ---
@@ -146,7 +146,7 @@ user didn't ask to send. After uploading, read back with `conversations.history 
 `users.lookupByEmail`. Say so and suggest scheduling it in the Slack app.
 
 **Not in the table?** Only then (anything listed above: use it as written, no lookup):
-1. Find the method: fetch `https://api.slack.com/methods/<method>` (e.g. `bookmarks.list`) and read its
+1. Find the method: `curl -s https://api.slack.com/methods/<method>` (e.g. `bookmarks.list`) and read its
    arguments. Call it with the `slack` helper as usual. If Slack answers `not_allowed_token_type`, session
    tokens can't use that method: say so.
 Then make a **read-only** call first. For anything that creates, changes or deletes, show the exact call and

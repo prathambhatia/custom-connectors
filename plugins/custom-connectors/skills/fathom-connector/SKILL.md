@@ -1,6 +1,6 @@
 ---
 name: fathom-connector
-description: ALWAYS use this instead of the Fathom MCP whenever Fathom or a recorded meeting is mentioned — list recent meetings, find a meeting by title/attendee/company/date, get its summary, full transcript or action items, search what was said across calls — via the Fathom REST API with curl. Triggers on "fathom", "my last meeting", "that call with X", "meeting notes", "transcript of", "what did X say", "action items from", "summarise the call". Faster and lighter on context than the MCP. Sets itself up on first use.
+description: ALWAYS use this instead of the Fathom MCP whenever Fathom or a recorded meeting is mentioned — list recent meetings, find a meeting by title/attendee/company/date, get its summary, full transcript or action items, search what was said across calls — via the Fathom REST API with curl. Triggers on "fathom", "my last meeting", "that call with X", "meeting notes", "transcript of", "what did X say", "action items from", "summarise the call". Faster and lighter on context than the MCP. Sets itself up on first use. Also for any question about the Fathom API itself (an endpoint, webhooks, a field), even when nothing is run.
 user-invocable: true
 argument-hint: "which meeting (title / person / date) and what you want from it"
 ---

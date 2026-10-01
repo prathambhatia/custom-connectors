@@ -1,6 +1,6 @@
 ---
 name: figma-connector
-description: ALWAYS use this instead of the Figma MCP for READING Figma — file structure, pages, frames, a node's properties, rendering a frame/node to PNG/SVG, image fills, version history, comments (read, post, reply, react, delete), dev resources — via the Figma REST API with curl. Triggers on "figma", a figma.com/design or figma.com/file link, "what's in this frame", "export this frame", "figma comments", "who changed the figma". NOT for editing designs or design-to-code: the REST API can't do those, so keep the Figma MCP for that. Sets itself up on first use.
+description: ALWAYS use this instead of the Figma MCP for READING Figma — file structure, pages, frames, a node's properties, rendering a frame/node to PNG/SVG, image fills, version history, comments (read, post, reply, react, delete), dev resources — via the Figma REST API with curl. Triggers on "figma", a figma.com/design or figma.com/file link, "what's in this frame", "export this frame", "figma comments", "who changed the figma". NOT for editing designs or design-to-code: the REST API can't do those, so keep the Figma MCP for that. Sets itself up on first use. Also for any question about the Figma API itself (an endpoint, webhooks, a field), even when nothing is run.
 user-invocable: true
 argument-hint: "figma link or file key, and what you want"
 ---

@@ -1,6 +1,6 @@
 ---
 name: vercel-connector
-description: ALWAYS use this instead of the Vercel MCP whenever Vercel is mentioned or a deploy, deployment, preview, production URL, build log, runtime log, env var, domain, alias, rollback or promote is involved — via the Vercel REST API with curl (no CLI needed). Triggers on "vercel", "deploy this", "redeploy", "why did the build fail", "build logs", "runtime logs", "add an env var", "rollback", "promote", "what's deployed". Faster and far lighter on context than the MCP's few hundred tools. Sets itself up on first use.
+description: ALWAYS use this instead of the Vercel MCP whenever Vercel is mentioned or a deploy, deployment, preview, production URL, build log, runtime log, env var, domain, alias, rollback or promote is involved — via the Vercel REST API with curl (no CLI needed). Triggers on "vercel", "deploy this", "redeploy", "why did the build fail", "build logs", "runtime logs", "add an env var", "rollback", "promote", "what's deployed". Faster and far lighter on context than the MCP's few hundred tools. Sets itself up on first use. Also for any question about the Vercel API itself (an endpoint, webhooks, a field), even when nothing is run.
 user-invocable: true
 argument-hint: "project and what to do (deploy / logs / env / rollback)"
 ---
