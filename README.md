@@ -37,18 +37,22 @@ Update later with `/plugin marketplace update custom-connectors`.
 
 **An MCP loads every one of its tools into every session**, whether you use them or not:
 
-| MCP | Tools it loads | Approx. tokens | Share of a 1M context |
-|---|---|---|---|
-| Vercel | 244 | ~145k (measured) | 14.5% |
-| ClickUp | 65 | ~30k | 3.0% |
-| Figma | 45 | ~20k | 2.0% |
-| Slack | 19 | ~10k | 1.0% |
-| Fathom | 9 | ~3k | 0.3% |
-| **Total** | **382** | **~208k** | **~21%** |
+| MCP | Tools it loads | Before: MCP tokens | **Before** (share of 1M) | After: connector tokens | **After** (share of 1M) |
+|---|---|---|---|---|---|
+| Vercel | 244 | ~145k (measured) | **14.5%** | ~140 | **0.014%** |
+| ClickUp | 65 | ~30k | **3.0%** | ~130 | **0.013%** |
+| Figma | 45 | ~20k | **2.0%** | ~150 | **0.015%** |
+| Slack | 19 | ~10k | **1.0%** | ~90 | **0.009%** |
+| Fathom | 9 | ~3k | **0.3%** | ~140 | **0.014%** |
+| **Total (5 MCPs)** | **382** | **~208k** | **~21%** | **~650** | **~0.07%** |
 
-**A connector loads one line until you use it.** All six together are **~800 tokens (0.08%)**, measured
-by `claude plugin details`, and the one you're using adds 1k–2k. Vercel was measured by fetching its full tool list; the others are
-estimated from their tool counts. Run `/context` before and after to see your own numbers.
+**Before ~21% → after ~0.07% of a 1M context**, so about a fifth of the window comes back in every
+session. The AWS connector adds another ~150 tokens (it has no MCP to compare against), for ~800 total.
+
+"After" is what loads in every session, measured by Claude Code itself with `claude plugin details`.
+When you actually use a connector, that one adds 1k–2k tokens for that session only. Vercel's "before"
+was measured by fetching its full tool list; the other "before" numbers are estimated from their tool
+counts. Run `/context` before and after to see your own numbers.
 
 - **Faster:** no MCP server in between, Claude calls the app's API directly.
 - **Acts as you:** your own token, so messages and comments show your name.
