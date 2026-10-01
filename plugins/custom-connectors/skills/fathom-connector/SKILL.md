@@ -32,6 +32,11 @@ fathom() { curl -s -H "X-Api-Key: $(security find-generic-password -s fathom-api
 # usage: fathom 'meetings?created_after=2026-09-25T00:00:00Z' | jq .
 ```
 
+That helper expands to full URLs like `https://api.fathom.ai/external/v1/meetings`. **There is no `/my/` prefix** (`/v1/my/meetings` is a 404). Other paths: `/v1/recordings/<id>/summary`, `/v1/recordings/<id>/transcript`, `/v1/teams`, `/v1/team_members`, `/v1/meeting_types`.
+
+**Copy the commands below exactly; never guess an endpoint path.** If a call returns 404, the path is wrong: recheck this file, don't try variations.
+
+
 Paste it into each Bash call (shell state doesn't persist). Never print the key. On 401, rerun setup.
 
 **Save responses to a file, don't pipe through `echo`.** Transcripts and summaries contain `\n`;

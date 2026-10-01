@@ -35,6 +35,9 @@ fg() { local m=$1 p=$2; shift 2; curl -s -X $m -H "X-Figma-Token: $(security fin
 # usage: fg GET "v1/files/$K?depth=2" > f.json; jq . f.json
 ```
 
+**Copy the commands below exactly; never guess an endpoint path.** If a call returns 404, the path is wrong: recheck this file, don't try variations.
+
+
 Paste into each Bash call; save to files (Figma JSON is huge), never pipe through zsh `echo`. On
 401, rerun setup.
 

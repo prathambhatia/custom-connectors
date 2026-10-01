@@ -32,6 +32,9 @@ cu() { local m=$1 p=$2; shift 2; curl -s -X $m -H "Authorization: $(security fin
 # usage: cu GET task/abc123 > t.json; jq . t.json
 ```
 
+**Copy the commands below exactly; never guess an endpoint path.** If a call returns 404, the path is wrong: recheck this file, don't try variations.
+
+
 Paste into each Bash call. Save responses to files and jq them; don't pipe JSON through zsh `echo`
 (it expands `
 ` and jq fails). Errors come back as `{"err":…,"ECODE":…}`, check for them.

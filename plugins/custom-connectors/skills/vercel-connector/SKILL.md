@@ -31,6 +31,9 @@ v() { local m=$1 p=$2; shift 2; curl -s -X $m -H "Authorization: Bearer $(securi
 # usage: v GET "v10/projects?teamId=$TEAM&limit=20" > p.json; jq . p.json
 ```
 
+**Copy the commands below exactly; never guess an endpoint path.** If a call returns 404, the path is wrong: recheck this file, don't try variations.
+
+
 Paste into each Bash call. Save to files, don't pipe JSON through zsh `echo`. Errors look like
 `{"error":{"code":…,"message":…}}`. On 401, rerun setup.
 

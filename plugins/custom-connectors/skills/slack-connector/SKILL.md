@@ -79,6 +79,9 @@ finduser() { local ws=$1 q=$2 cur=""; while :; do
   cur=$(printf %s "$r" | jq -r '.response_metadata.next_cursor // empty'); [ -z "$cur" ] && return; done; }
 ```
 
+**Copy the commands below exactly; never guess an endpoint path.** If a call returns 404, the path is wrong: recheck this file, don't try variations.
+
+
 Never print the token or cookie. Save responses to a file or use `printf %s "$r"`, never zsh `echo` (it expands `\n` inside the JSON and jq fails). Check `.ok` on every response; on `false` read `.error`.
 If only one workspace is saved, use it; if several and the user didn't say which, ask.
 
