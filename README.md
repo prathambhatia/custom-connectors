@@ -32,7 +32,7 @@ Updates don't arrive on their own. To get the latest version, run inside Claude 
 /reload-plugins
 ```
 
- `/plugin` shows the installed version.
+`/plugin` shows the installed version.
 
 Skills show as `custom-connectors:slack`, `:fathom`, `:clickup`, `:vercel`, `:aws`, `:figma` and `:chrome-devtools`
 (before v1.2.0 they ended in `-connector`).
