@@ -7,8 +7,8 @@
     {
       "name": "custom-connectors",
       "source": "./plugins/custom-connectors",
-      "description": "Slack, Fathom, ClickUp, Vercel, AWS and Figma connectors that replace their MCPs with direct REST/CLI calls, using your own tokens from the macOS Keychain"
+      "description": "Slack, Fathom, ClickUp, Vercel, AWS, Chrome DevTools and Figma connectors that replace their MCPs with direct calls, using your own tokens from the macOS Keychain"
     }
   ],
-  "description": "Connectors that replace the Slack, Fathom, ClickUp, Vercel, AWS and Figma MCPs with lightweight skills"
+  "description": "Connectors that replace the Slack, Fathom, ClickUp, Vercel, AWS, Chrome DevTools and Figma MCPs with lightweight skills"
 }

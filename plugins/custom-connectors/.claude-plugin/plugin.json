@@ -1,7 +1,7 @@
 {
   "name": "custom-connectors",
-  "description": "Replace the Slack, Fathom, ClickUp, Vercel and AWS MCPs (and Figma's read side) with skills that call each app's API directly. Loads only when used, so it saves context.",
-  "version": "1.0.2",
+  "description": "Replace the Slack, Fathom, ClickUp, Vercel, AWS and Chrome DevTools MCPs (and Figma's read side) with skills that call each app directly. Loads only when used, so it saves context.",
+  "version": "1.1.0",
   "author": {
     "name": "Pratham Bhatia"
   },
@@ -15,6 +15,7 @@
     "aws",
     "figma",
     "connectors",
-    "mcp-alternative"
+    "mcp-alternative",
+    "chrome-devtools"
   ]
 }
