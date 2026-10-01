@@ -12,7 +12,8 @@ CLI), using your own login saved in your Mac's Keychain.
 ```
 
 Start a new session and you're done. Nothing runs at install time: the skills are just
-instructions Claude reads when you ask for that app.
+instructions Claude reads when you ask for that app. The files live in
+`~/.claude/plugins/` on your Mac, not in any of your project repos.
 
 **Then turn off the MCPs these replace**, otherwise they keep loading their tools every session.
 Type `/mcp`, pick each of Slack, Fathom, ClickUp, Vercel and AWS, and disable it. Connectors added
@@ -45,8 +46,8 @@ Update later with `/plugin marketplace update custom-connectors`.
 | Fathom | 9 | ~3k | 0.3% |
 | **Total** | **382** | **~208k** | **~21%** |
 
-**A connector loads one line until you use it.** All six together are about 1k tokens (~0.1%), and
-the one you're using adds 2k–5k. Vercel was measured by fetching its full tool list; the others are
+**A connector loads one line until you use it.** All six together are **~800 tokens (0.08%)**, measured
+by `claude plugin details`, and the one you're using adds 1k–2k. Vercel was measured by fetching its full tool list; the others are
 estimated from their tool counts. Run `/context` before and after to see your own numbers.
 
 - **Faster:** no MCP server in between, Claude calls the app's API directly.
