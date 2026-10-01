@@ -67,6 +67,8 @@ Always `--profile <p>` (and `--region` if not set in the profile). Use `--query`
 `--output text` to keep output small; save big JSON to a file. **Anything not listed is still
 available:** `aws <service> help` and `aws <service> <command> help` list every command.
 
+**Copy commands from this table exactly; check flags with `aws <service> <command> help` instead of guessing.**
+
 | Service | Read | Common writes (prod-write rule on admin profiles) |
 |---|---|---|
 | **Identity** | `aws sts get-caller-identity` | |
