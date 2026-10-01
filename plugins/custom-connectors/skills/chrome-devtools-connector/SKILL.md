@@ -20,12 +20,13 @@ chrome-devtools MCP does. Logins you make in that window are remembered next tim
 
 To drive the user's everyday Chrome instead, set `CDT_FLAGS=--autoConnect` before the first call, have
 them enable `chrome://inspect/#remote-debugging`, and click **Allow** when Chrome asks. Stop the bridge
-with `pkill -f "supergateway.*4330"`.
+with `lsof -ti tcp:4330 | xargs kill`. **Never `pkill -f supergateway`**: it matches and kills the shell running it.
 
 ## Helper (paste into each Bash call)
 
 ```bash
-cdt_start() { pkill -f "supergateway.*4330"; sleep 1; mkdir -p ~/.cache/cdt-bridge; rm -f ~/.cache/cdt-bridge/sid
+cdt_start() { [ "$(curl -s -m 2 -o /dev/null -w '%{http_code}' -X POST http://127.0.0.1:4330/mcp)" != 000 ] && [ -z "$1" ] && return 0
+  lsof -ti tcp:4330 | xargs kill 2>/dev/null; sleep 1; mkdir -p ~/.cache/cdt-bridge; rm -f ~/.cache/cdt-bridge/sid
   nohup npx -y supergateway --stdio "npx -y chrome-devtools-mcp@latest --no-usage-statistics --workspace=$HOME --workspace=/tmp --workspace=/private/tmp ${CDT_FLAGS:-}" \
     --outputTransport streamableHttp --stateful --sessionTimeout 86400000 --port 4330 > ~/.cache/cdt-bridge/bridge.log 2>&1 &
   for i in $(seq 1 45); do grep -q "Listening on port 4330" ~/.cache/cdt-bridge/bridge.log 2>/dev/null && return 0; sleep 2; done
@@ -40,12 +41,12 @@ cdt() { local args=$2; [ -z "$args" ] && args='{}'; local U=http://127.0.0.1:433
   [ -s $F ] || _cdt_init
   local r; r=$(_cdt_call "$1" "$args")
   if ! printf %s "$r" | grep -q '^data: '; then _cdt_init; r=$(_cdt_call "$1" "$args"); fi
-  if printf %s "$r" | grep -q 'browser is already running'; then cdt_start && _cdt_init && r=$(_cdt_call "$1" "$args"); fi
+  if printf %s "$r" | grep -q 'browser is already running'; then cdt_start force && _cdt_init && r=$(_cdt_call "$1" "$args"); fi
   printf %s "$r" | sed -n 's/^data: //p' | jq -r 'if .error then "ERROR: \(.error.message)" elif .result.isError then "TOOLERR: \([.result.content[]?.text]|join(" "))" else ([.result.content[]? | if .type=="text" then .text else "[\(.type)]" end]|join("\n")) end'; }
 # usage: cdt list_pages; cdt new_page '{"url":"https://example.com"}'
 ```
 
-**Pass the tool name first and the JSON arguments second.** Copy commands exactly; never guess tool
+**Paste the helper, then call `cdt`; never call `cdt_start` yourself** (it restarts nothing if the bridge is up, but a forced restart closes every open page). **Pass the tool name first and the JSON arguments second.** Copy commands exactly; never guess tool
 or argument names, they're all in the table below. If the session is lost the helper reconnects or restarts the bridge on its own; after a restart, open pages are gone and need reopening.
 
 ## Rules

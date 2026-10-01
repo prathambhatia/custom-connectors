@@ -1,7 +1,7 @@
 {
   "name": "custom-connectors",
   "description": "Replace the Slack, Fathom, ClickUp, Vercel, AWS and Chrome DevTools MCPs (and Figma's read side) with skills that call each app directly. Loads only when used, so it saves context.",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "author": {
     "name": "Pratham Bhatia"
   },

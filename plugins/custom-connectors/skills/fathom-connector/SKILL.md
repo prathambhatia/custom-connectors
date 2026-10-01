@@ -84,12 +84,14 @@ Action item fields: `description`, `completed`, `assignee.name`, `recording_time
 ### Paging helper (find a meeting, or search across many)
 
 ```bash
-fathom_all() { local q=$1 max=${2:-5} cur="" n=0; : > fa.jsonl   # q = query string, max = pages
+fathom_all() { local q=$1 max=${2:-5} cur="" n=0 pg=$(mktemp); : > fa.jsonl   # q = query string, max = pages
   while [ $n -lt $max ]; do
-    fathom "meetings?${q}${cur:+&cursor=$cur}" > fa_page.json
-    jq -c '.items[]' fa_page.json >> fa.jsonl
-    cur=$(jq -r '.next_cursor // empty' fa_page.json); n=$((n+1)); [ -z "$cur" ] && break; done
-  echo "$(wc -l < fa.jsonl | tr -d ' ') meetings in fa.jsonl"; }
+    fathom "meetings?${q}${cur:+&cursor=$cur}" > $pg
+    jq -e .items $pg >/dev/null 2>&1 || { echo "page $n not JSON (rate limit?): $(head -c 150 $pg)"; sleep 20; continue; }
+    jq -c '.items[]' $pg >> fa.jsonl
+    cur=$(jq -r '.next_cursor // empty' $pg); n=$((n+1)); [ -z "$cur" ] && break; done
+  rm -f $pg; echo "$(wc -l < fa.jsonl | tr -d ' ') meetings in fa.jsonl"; }
+# run it in your own scratch folder (cd to a fresh dir first), so parallel sessions don't share fa.jsonl
 # find by title or attendee name:
 fathom_all 'created_after=2026-09-01T00:00:00Z' 5
 jq -r 'select((.title+" "+([.calendar_invitees[]?.name]|join(" ")))|ascii_downcase|contains("john"))|"\(.recording_id) \(.recording_start_time) \(.title)"' fa.jsonl

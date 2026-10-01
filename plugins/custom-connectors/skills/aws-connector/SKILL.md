@@ -95,6 +95,8 @@ available:** `aws <service> help` and `aws <service> <command> help` list every 
 | **CloudTrail** (who did what) | `cloudtrail lookup-events --lookup-attributes AttributeKey=EventName,AttributeValue=UpdateService --max-results 10` | |
 | **Cost Explorer** | `ce get-cost-and-usage --time-period Start=2026-09-01,End=2026-10-01 --granularity MONTHLY --metrics UnblendedCost`; add `--group-by Type=DIMENSION,Key=SERVICE` for per-service | |
 
+**CloudWatch filter patterns:** plain text is `--filter-pattern error` or `--filter-pattern '"Exception"'`. For **JSON logs** use the JSON syntax: `--filter-pattern '{ $.level >= 50 }'` or `'{ $.error_code = "otp_*" }'`. A bare `'"level":50'` is rejected as `Invalid filter pattern`.
+
 **Traps**
 
 - **A `| head` or `| jq` after an AWS command hides its failure**: the pipe succeeds even when the
