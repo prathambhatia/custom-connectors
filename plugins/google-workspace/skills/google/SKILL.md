@@ -113,7 +113,7 @@ curl -s -X PATCH -H "Authorization: Bearer $T" -H "Content-Type: text/csv" --dat
 
 ### Gmail
 
-Read-only calls are safe. **Never print message bodies or snippets; ask before showing mail content.**
+Read-only calls are safe. **Never print message bodies or snippets unless the user names the message; ask before showing mail content.**
 
 | Task | Call |
 |---|---|
@@ -132,8 +132,38 @@ Build `RAW` (base64url of an RFC822 message, no padding):
 RAW=$(printf 'To: a@b.com\r\nSubject: Hi\r\nContent-Type: text/plain; charset=UTF-8\r\n\r\nBody' | base64 | tr '+/' '-_' | tr -d '=\n')
 ```
 
-Attachments: `GET $G/messages/<ID>/attachments/<ATT_ID>` returns `{size,data}` with base64url `data`. The `<ATT_ID>` comes from
-`payload.parts[].body.attachmentId` of a `format=full` message. Shape from Google docs; a bogus id returned 400, no real one fetched.
+### Read a message body
+
+Only for a message the user named. Show that one message, never a batch, and cap the output (`head -c 4000`) unless asked for all of it.
+Tested on drafts built with a known body (plain, HTML only, mixed with an attachment) and on real inbox messages (structure and
+length only): every round trip matched. Save the JSON to a file, then decode:
+
+```bash
+g GET "$G/messages/<ID>?format=full" > m.json
+python3 - <<'PY'
+import base64, html, json, re
+def b64d(s): return base64.urlsafe_b64decode(s + "=" * (-len(s) % 4)).decode("utf-8", "replace")
+def walk(p, o):
+    mt, body = p.get("mimeType", ""), p.get("body", {})
+    if p.get("filename"): o["att"].append((p["filename"], body.get("attachmentId")))
+    elif mt in ("text/plain", "text/html") and body.get("data"): o[mt].append(b64d(body["data"]))
+    for c in p.get("parts") or []: walk(c, o)
+o = {"text/plain": [], "text/html": [], "att": []}; walk(json.load(open("m.json"))["payload"], o)
+if o["text/plain"]: t = "\n".join(o["text/plain"])
+else:
+    h = re.sub(r"(?is)<(script|style).*?</\1>", "", "\n".join(o["text/html"]))
+    h = re.sub(r"(?i)<br\s*/?>|</p>|</div>", "\n", h); t = html.unescape(re.sub(r"<[^>]+>", "", h)).strip()
+print(t[:4000]); print("attachments:", [a[0] for a in o["att"]])
+PY
+```
+
+- Prefer the `text/plain` part. If a message has only HTML, the tag-stripping above gives readable text.
+- Parts nest (`multipart/mixed` > `related` > `alternative`), so always walk the tree; never read `payload.body` alone (empty on multipart).
+- Newsletters can decode to 15,000+ characters: summarise or cap instead of printing.
+- Inline images and calendar invites show up as attachments with a filename; ignore them unless asked.
+- Attachment download (tested): `g GET "$G/messages/<ID>/attachments/<ATT_ID>"` returns `{size,data}`; decode `data` with the same `b64d`
+  (the attachment text round-tripped exactly). `<ATT_ID>` is `payload.parts[].body.attachmentId` of the `format=full` message.
+- Drafts also appear in `messages.list`. Add `labelIds=INBOX` to list only received mail.
 
 ### Calendar
 
