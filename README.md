@@ -162,6 +162,9 @@ Calendar and Tasks, all with temporary items that the run deletes):
 | Plugin | Runs | Task done | No failed call on the way |
 |---|---|---|---|
 | google-workspace | 24 | 100% | 92% |
+| google-workspace, v1.0.2 editing cases (8 requests: Docs template and table, Sheets format, Drive copy/move and CSV convert, Gmail send-to-self and reply, Calendar update and Meet, Tasks complete) | 16 | 100% | 94% |
+
+The one unclean v1.0.2 run was the model's own Python script crashing, not a Google call.
 
 The first round was 100% done and 88% clean; its three failed calls exposed two skill gaps (saving the Docs create reply to
 a file, and `curl -G` with a query in the URL), both fixed. The remaining one was the model calling a missing `shuf` command.

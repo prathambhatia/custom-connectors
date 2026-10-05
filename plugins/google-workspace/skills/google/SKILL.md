@@ -1,6 +1,6 @@
 ---
 name: google
-description: Use only after the one-time Google setup below is done (Keychain item google-refresh-token-personal exists); if it is missing, show the setup steps and stop. Then use this instead of the claude.ai Google Drive, Gmail and Google Calendar MCPs whenever Google Workspace is involved — upload to drive, download a drive file, find a file or folder, replace a file in place, trash a file, read or write a google doc, google sheet or slides deck, read my email, search gmail, make a gmail draft, list calendar events, add a calendar event, google tasks — via the Google REST APIs with curl and your own OAuth token. Triggers on "google drive", "upload to drive", "drive folder", "gmail", "read my email", "google doc", "google sheet", "slides", "calendar", "my tasks".
+description: Use only after the one-time Google setup below is done (Keychain item google-refresh-token-personal exists); if it is missing, show the setup steps and stop. Then use this instead of the claude.ai Google Drive, Gmail and Google Calendar MCPs whenever Google Workspace is involved — upload to drive, download a drive file, find a file or folder, replace a file in place, trash a file, read or write a google doc, google sheet or slides deck, read my email, search gmail, make a gmail draft, list calendar events, add a calendar event, send an email, fill a doc table, format a sheet, google tasks — via the Google REST APIs with curl and your own OAuth token. Triggers on "google drive", "upload to drive", "drive folder", "gmail", "read my email", "google doc", "google sheet", "slides", "calendar", "my tasks".
 user-invocable: true
 argument-hint: "what to do (upload / read mail / doc / sheet / calendar)"
 ---
@@ -9,6 +9,9 @@ argument-hint: "what to do (upload / read mail / doc / sheet / calendar)"
 
 Calls Google's REST APIs directly with one all-scopes token (Drive, Docs, Sheets, Slides, Gmail, Calendar, Tasks) for the
 Google account the user signs in with. Every call below was run live against a real account.
+
+**Long recipes (Docs editing and tables, Sheets formatting, Slides editing, Gmail send/reply/attachments/labels) are in
+`${CLAUDE_PLUGIN_ROOT}/skills/google/editing.md`: Read that file before any task that edits a doc, sheet or deck or sends mail.**
 
 ## Step 1: first-run gate (always do this first)
 
@@ -63,11 +66,19 @@ Paste into each Bash call (shell state does not persist). Save JSON to files, do
 | Create folder | `g POST "$D/files?fields=id" -d '{"name":"X","mimeType":"application/vnd.google-apps.folder"}'` |
 | File metadata | `g GET "$D/files/<ID>?fields=id,name,mimeType,size,trashed"` |
 | Download content | `curl -s -H "Authorization: Bearer $T" "$D/files/<ID>?alt=media" -o file` |
-| Export Doc/Sheet/Slides | `curl -s -G -H "Authorization: Bearer $T" --data-urlencode "mimeType=application/pdf" "$D/files/<ID>/export" -o x.pdf` (also `text/plain`) |
+| Export Doc/Sheet/Slides | `curl -s -G -H "Authorization: Bearer $T" --data-urlencode "mimeType=application/pdf" "$D/files/<ID>/export" -o x.pdf`. Tested: Doc to `text/plain`, `text/markdown`, `application/pdf`, `application/vnd.openxmlformats-officedocument.wordprocessingml.document` (.docx); Sheet to `text/csv` and `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet` (.xlsx) |
 | Rename | `g PATCH "$D/files/<ID>?fields=name" -d '{"name":"new"}'` |
 | Trash (preferred) | `g PATCH "$D/files/<ID>?fields=trashed" -d '{"trashed":true}'` |
 | Permanent delete | `g DELETE "$D/files/<ID>"` (204, no undo, ask first) |
+| Copy | `g POST "$D/files/<ID>/copy?fields=id,name,parents" -d '{"name":"copy"}'` (add `"parents":["<FOLDER>"]` to copy into a folder) |
+| Move | `g PATCH "$D/files/<ID>?addParents=<NEW>&removeParents=<OLD>&fields=id,parents" -d '{}'` (get `<OLD>` from `fields=parents`) |
+| Star / description | `g PATCH "$D/files/<ID>?fields=starred,description" -d '{"starred":true,"description":"x"}'`; find starred with `q=starred=true` |
+| Revisions | `g GET "$D/files/<ID>/revisions?fields=revisions(id,modifiedTime)"` |
+| Comments on a Doc | create / list / reply / delete, see editing.md (`fields` is required) |
+| Shared drives (read-only) | `g GET "$D/drives?pageSize=5&fields=drives(id,name)"`; search them with `corpora=allDrives`, `supportsAllDrives=true`, `includeItemsFromAllDrives=true` |
 | List permissions (read-only) | `g GET "$D/files/<ID>/permissions?fields=permissions(id,role,type)"` |
+| Share (asks first) | `g POST "$D/files/<ID>/permissions?sendNotificationEmail=false&fields=id,role" -d '{"type":"user","role":"reader","emailAddress":"<WHO>"}'` (`role` reader/commenter/writer) |
+| Unshare | `g DELETE "$D/files/<ID>/permissions/<PERM_ID>"` (204; confirm with the list call) |
 
 ### Upload a file (two ways, both tested)
 
@@ -82,6 +93,19 @@ curl -s -X PATCH -H "Authorization: Bearer $T" -H "Content-Type: text/csv" --dat
   "https://www.googleapis.com/upload/drive/v3/files/$ID?uploadType=media&fields=id,size"
 ```
 
+**Convert on upload:** set the target Google type as `mimeType` in the metadata of method A and upload the real file, e.g.
+`{"name":"x","mimeType":"application/vnd.google-apps.spreadsheet"}` with a `.csv` or `.xlsx`, or `application/vnd.google-apps.document` with a `.docx`
+(all three returned the Google type and the right content). A PATCH of new CSV bytes onto a converted Sheet replaces its content (same id).
+
+**Over 5 MB: resumable.** Tested with 6 MB, size matched after download:
+
+```bash
+curl -s -D hdr.txt -o /dev/null -X POST -H "Authorization: Bearer $T" -H "Content-Type: application/json; charset=UTF-8" -H "X-Upload-Content-Type: application/octet-stream" \
+  -d '{"name":"big.bin","parents":["<FOLDER_ID>"]}' "https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&fields=id,size"
+LOC=$(grep -i '^location:' hdr.txt | cut -d' ' -f2 | tr -d '\r')
+curl -s -X PUT -H "Content-Type: application/octet-stream" --data-binary @big.bin "$LOC"     # returns {id,size}
+```
+
 ### Docs
 
 | Task | Call |
@@ -89,7 +113,9 @@ curl -s -X PATCH -H "Authorization: Bearer $T" -H "Content-Type: text/csv" --dat
 | Create | `g POST https://docs.googleapis.com/v1/documents -d '{"title":"X"}' > c.json; jq -r .documentId c.json` (always save to a file: the reply holds `\n` escapes that zsh `echo` turns into real newlines, and then `jq` fails) |
 | Insert text | `g POST "https://docs.googleapis.com/v1/documents/<DOC>:batchUpdate" -d '{"requests":[{"insertText":{"location":{"index":1},"text":"Hello\n"}}]}'` |
 | Read text | `g GET "https://docs.googleapis.com/v1/documents/<DOC>" > d.json; jq -r '[.body.content[].paragraph.elements[]?.textRun.content]\|join("")' d.json` |
-| Read as plain text (simpler) | Drive export with `mimeType=text/plain` (output starts with a BOM) |
+| Read as text (simplest) | Drive export with `mimeType=text/markdown` (keeps headings and tables) or `text/plain` (starts with a BOM) |
+| Fill `{{placeholders}}`, bold, headings, bullets, page break, image | editing.md, Docs |
+| Tables: insert, fill every cell, add/delete rows and columns, cell colour | editing.md, Tables (**fill last cell first**) |
 
 ### Sheets
 
@@ -103,6 +129,8 @@ curl -s -X PATCH -H "Authorization: Bearer $T" -H "Content-Type: text/csv" --dat
 | Append rows | `g POST "$SH/<ID>/values/Sheet1!A1:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS" -d '{"values":[["b",5]]}'` |
 | Bold header row | `g POST "$SH/<ID>:batchUpdate" -d '{"requests":[{"repeatCell":{"range":{"sheetId":0,"startRowIndex":0,"endRowIndex":1},"cell":{"userEnteredFormat":{"textFormat":{"bold":true}}},"fields":"userEnteredFormat.textFormat.bold"}}]}'` |
 
+| Clear / batchGet / tabs / formats / merge / freeze / sort / find-replace / delete rows / chart | editing.md, Sheets |
+
 ### Slides
 
 | Task | Call |
@@ -110,6 +138,7 @@ curl -s -X PATCH -H "Authorization: Bearer $T" -H "Content-Type: text/csv" --dat
 | Create | `g POST "https://slides.googleapis.com/v1/presentations?fields=presentationId" -d '{"title":"X"}'` |
 | Add slide | `g POST "https://slides.googleapis.com/v1/presentations/<ID>:batchUpdate" -d '{"requests":[{"createSlide":{"slideLayoutReference":{"predefinedLayout":"TITLE_AND_BODY"}}}]}'` |
 | Read | `g GET "https://slides.googleapis.com/v1/presentations/<ID>?fields=slides.objectId"` (a new deck starts with 1 slide) |
+| Fill placeholders, text into a shape, text box, duplicate or delete a slide, image | editing.md, Slides (object ids need 5+ characters) |
 
 ### Gmail
 
@@ -124,6 +153,7 @@ Read-only calls are safe. **Never print message bodies or snippets unless the us
 | List threads | `g GET "$G/threads?maxResults=2"` |
 | One thread | `g GET "$G/threads/<TID>?format=metadata"` |
 | Create draft | `g POST "$G/drafts" -d "{\"message\":{\"raw\":\"$RAW\"}}"` |
+| Send (asks first) | `g POST "$G/messages/send" -d "{\"raw\":\"$RAW\"}"`; reply in a thread, attachments, labels, archive, trash, batchModify: editing.md, Gmail |
 | Delete draft | `g DELETE "$G/drafts/<DRAFT_ID>"` (204) |
 
 Build `RAW` (base64url of an RFC822 message, no padding):
@@ -173,6 +203,13 @@ PY
 | Events in a time range | same call with extra `--data-urlencode "timeMin=2026-10-06T00:00:00+05:30" --data-urlencode "timeMax=2026-10-07T00:00:00+05:30"`; count with `jq '.items\|length'` |
 | Upcoming events | `curl -s -G -H "Authorization: Bearer $T" --data-urlencode "timeMin=$(date -u +%Y-%m-%dT%H:%M:%SZ)" --data-urlencode "maxResults=3" --data-urlencode "singleEvents=true" --data-urlencode "orderBy=startTime" "$C/calendars/primary/events"` |
 | Add event (no attendees; example date and zone, use the user's) | `g POST "$C/calendars/primary/events?sendUpdates=none&fields=id,status" -d '{"summary":"X","start":{"dateTime":"2026-10-06T03:00:00+05:30","timeZone":"Asia/Kolkata"},"end":{"dateTime":"2026-10-06T03:30:00+05:30","timeZone":"Asia/Kolkata"}}'` |
+| Get one event | `g GET "$C/calendars/primary/events/<ID>?fields=summary,start,status"` |
+| Change title or time | `g PATCH "$C/calendars/primary/events/<ID>?sendUpdates=none&fields=summary,start" -d '{"summary":"new","start":{...},"end":{...}}'` (PATCH merges; PUT replaces the whole event) |
+| Add a Google Meet link | add `conferenceDataVersion=1` to the URL and `"conferenceData":{"createRequest":{"requestId":"<unique>","conferenceSolutionKey":{"type":"hangoutsMeet"}}}` to the body, on create or PATCH; read `hangoutLink` |
+| Add attendees (invites them: ask first) | add `"attendees":[{"email":"<WHO>"}]` to the body; keep `sendUpdates=none` unless the user wants invites sent |
+| Repeating event | add `"recurrence":["RRULE:FREQ=DAILY;COUNT=3"]`; `.../events/<ID>/instances` lists the occurrences; deleting the series id removes all |
+| Quick add | `curl -s -X POST -H "Authorization: Bearer $T" -G --data-urlencode "text=Lunch on 2026-10-07 at 1pm" --data-urlencode sendUpdates=none "$C/calendars/primary/events/quickAdd"` (parsed text becomes the title and time) |
+| Free/busy | `g POST "$C/freeBusy" -d '{"timeMin":"2026-10-07T00:00:00+05:30","timeMax":"2026-10-07T06:00:00+05:30","items":[{"id":"primary"}]}'` (`calendars.primary.busy[]`) |
 | Delete event | `g DELETE "$C/calendars/primary/events/<ID>?sendUpdates=none"` (204; a GET afterwards shows `status: cancelled`) |
 
 ### Tasks
@@ -181,13 +218,18 @@ PY
 |---|---|
 | Task lists | `g GET "$TK/users/@me/lists"` |
 | Add task | `g POST "$TK/lists/@default/tasks" -d '{"title":"X"}'` |
+| Edit title / notes / due | `g PATCH "$TK/lists/@default/tasks/<ID>" -d '{"title":"y","notes":"n","due":"2026-10-08T00:00:00.000Z"}'` (PATCH merges; **PUT wipes notes and due** unless you resend them) |
+| Mark done | `g PATCH "$TK/lists/@default/tasks/<ID>" -d '{"status":"completed"}'` (sets `completed`) |
+| Move / make subtask | `curl -s -X POST -H "Authorization: Bearer $T" -G --data-urlencode "parent=<PARENT_ID>" "$TK/lists/<LIST>/tasks/<ID>/move"`; `previous=<ID>` instead sets the order (no `parent` = top level) |
+| Clear completed | `g POST "$TK/lists/<LIST>/clear" -d '{}'` (204; untested whether they then vanish from the plain list) |
+| New / delete a list | `g POST "$TK/users/@me/lists" -d '{"title":"X"}'`; `g DELETE "$TK/users/@me/lists/<LIST_ID>"` (204) |
 | Delete task | `g DELETE "$TK/lists/@default/tasks/<ID>"` (204) |
 
 ## Not in the table?
 
-Not run live, so treat as untested: sending mail (`POST $G/messages/send`), sharing (`permissions.create`), shared-drive
-files, calendar event update. Look up the endpoint in Google's REST reference first (read-only), run a harmless GET or a
-temp-item test, and ask the user before anything that sends, shares, edits or deletes.
+Not run live, so treat as untested: writing to a shared drive's files, Gmail settings changes, sending a draft (`drafts.send`), Docs headers/footers and
+named ranges, Sheets pivot tables and conditional formatting, Slides layouts and tables. Look up the endpoint in Google's REST reference first (read-only), run a
+harmless GET or a temp-item test, and ask the user before anything that sends, shares, edits or deletes.
 
 ## Traps (all hit or observed)
 
@@ -201,17 +243,27 @@ temp-item test, and ask the user before anything that sends, shares, edits or de
 - **Error shapes**: Drive 404 is `{error:{code:404,errors:[{reason:"notFound"}]}}`. Gmail with a bad message id returns 400 `INVALID_ARGUMENT`, not 404.
 - **Deletes return 204 with an empty body**: check the status code, not JSON.
 - **Gmail drafts** created via API carry label `DRAFT` and stay in the mailbox until deleted.
-- **Shared drives**: add `supportsAllDrives=true` (accepted, 200) and `includeItemsFromAllDrives=true` on lists. No shared drive was tested.
+- **Shared drives**: add `supportsAllDrives=true` and `includeItemsFromAllDrives=true` on lists; `corpora=allDrives` returned 200. Only listing was tested, no shared-drive file was written.
+- **Docs and Slides batchUpdate**: indexes shift after every edit; fill tables from the last cell to the first (editing.md). Slides object ids must be 5+ characters.
+- **Sheets reads return formatted text** (`"$2.00"`); add `valueRenderOption=UNFORMATTED_VALUE` for numbers. A CSV converted to a Sheet has its tab named after the file, not `Sheet1`.
+- **Drive comments** need `fields=` (400 otherwise). **Sharing** sends an email unless `sendNotificationEmail=false`.
+- **Calendar**: PUT replaces the event, PATCH merges. **Tasks**: PUT replaces too (notes and due go null).
+- **Gmail** `messages.send` to yourself arrives in the inbox as unread; `messages.delete` is permanent and returns 204; user label ids look like `Label_N`.
 
 ## Known not to work
 
 - `alt=media` on a Doc/Sheet/Slides (403, use export).
 - Drive MCP uploads (base64 only, corrupts files). Use the uploads above.
+- Docs table fill from the first cell to the last with indexes from one read: returns 200 but puts the text in the wrong cells (fill last cell first).
+- Slides object ids shorter than 5 characters (400). Drive `comments.create` or `comments.list` without `fields=` (400).
+- Reading `Sheet1!...` on a Sheet converted from a CSV (400 `Unable to parse range`): the tab carries the file name.
 
 ## Guardrails
 
-Ask the user before: sending any email, deleting or sharing any Drive file, editing or deleting a calendar event, any bulk
-action (many files, many mails). Prefer trash (`trashed:true`) over permanent delete. Create temp test items with the name
-`api-test-DELETE-ME` and delete them after. Never print the token, Keychain values, mail bodies or contacts.
+Ask the user before any outward-facing or hard-to-undo action: sending or replying to email, sharing a file or adding a permission, inviting attendees or
+editing or deleting a calendar event, permanent delete, any bulk action (many files, many mails). Defaults that keep it quiet: `sendNotificationEmail=false` on
+shares, `sendUpdates=none` on every calendar write. Prefer trash (`trashed:true`) over permanent delete. Never `emptyTrash`. Never change Gmail settings.
+Test with temp items named `api-test-DELETE-ME`, send test mail only to the user's own address, and delete everything afterwards (then search to confirm nothing is left).
+Never print the token, Keychain values, mail bodies or contacts.
 
 **How to apply:** for any Drive, Docs, Sheets, Slides, Gmail, Calendar or Tasks request, use this skill, not the claude.ai MCPs.
