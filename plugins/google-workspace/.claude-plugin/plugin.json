@@ -1,0 +1,21 @@
+{
+  "name": "google-workspace",
+  "description": "Optional, opt-in. Drive, Docs, Sheets, Slides, Gmail, Calendar and Tasks through the Google REST APIs with your own OAuth login, instead of the claude.ai Google connectors. Needs a one-time Google Cloud setup.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Pratham Bhatia"
+  },
+  "repository": "https://github.com/prathambhatia/custom-connectors",
+  "license": "MIT",
+  "keywords": [
+    "google",
+    "drive",
+    "docs",
+    "sheets",
+    "slides",
+    "gmail",
+    "calendar",
+    "tasks",
+    "mcp-alternative"
+  ]
+}

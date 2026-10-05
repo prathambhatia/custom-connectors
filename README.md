@@ -143,6 +143,29 @@ If a saved token later stops working, the same page opens again.
 
 Tokens go into your Keychain and never leave your Mac. This repo contains no credentials.
 
+## Optional: google-workspace plugin
+
+A separate plugin for Google Drive, Docs, Sheets, Slides, Gmail, Calendar and Tasks. It is **opt-in and is not
+installed by `custom-connectors`**. It needs a one-time Google Cloud setup (an OAuth client, about 10 minutes); on first use
+the skill checks for it and, if it is missing, stops and shows the steps.
+(Add the marketplace first, as in the install section above, if you have not.)
+
+```
+/plugin marketplace update custom-connectors
+/plugin install google-workspace@custom-connectors
+/reload-plugins
+```
+
+Measured the same way as the table above (12 requests, 2 runs each, 24 runs, Drive, Docs, Sheets, Slides, Gmail,
+Calendar and Tasks, all with temporary items that the run deletes):
+
+| Plugin | Runs | Task done | No failed call on the way |
+|---|---|---|---|
+| google-workspace | 24 | 100% | 92% |
+
+The first round was 100% done and 88% clean; its three failed calls exposed two skill gaps (saving the Docs create reply to
+a file, and `curl -G` with a query in the URL), both fixed. The remaining one was the model calling a missing `shuf` command.
+
 ## Without the plugin system
 
 ```bash

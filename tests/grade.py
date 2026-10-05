@@ -1,6 +1,6 @@
 import json,re,glob,os,collections
 import os as _o
-cases={l.split("\t")[0]:l.rstrip("\n").split("\t") for l in open(_o.path.join(_o.path.dirname(_o.path.abspath(__file__)),"cases.tsv")) if l.strip() and not l.startswith("#")}
+cases={l.split("\t")[0]:l.rstrip("\n").split("\t") for l in open(_o.environ.get("CONN_CASES") or _o.path.join(_o.path.dirname(_o.path.abspath(__file__)),"cases.tsv")) if l.strip() and not l.startswith("#")}
 ERR=re.compile(r'"status":\s*404|invalid_auth|not_authed|token_expired|TOOLERR|^ERROR:|"error":\{"code"|AccessDenied|command not found|jq: error|parse error|Please give your|No such file|curl: \(\d+\)|"status":\s*401|"err":"', re.M)
 rows=[]; per=collections.defaultdict(list)
 import sys
@@ -16,7 +16,7 @@ for f in sorted(glob.glob((sys.argv[1] if len(sys.argv)>1 else 'runs')+'/*.jsonl
     def txt(b):
         x=b.get('content'); return x if isinstance(x,str) else ' '.join(y.get('text','') for y in (x or []) if isinstance(y,dict))
     fails=[txt(b)[:160] for b in results if b.get('is_error') or ERR.search(txt(b))]
-    skill=any(t['name']=='Skill' and 'connector' in json.dumps(t['input']) for t in tools)
+    skill=any(t['name']=='Skill' and re.search('connector|google',json.dumps(t['input'])) for t in tools)
     mcp=any(t['name'].startswith('mcp__') for t in tools)
     ok=bool(re.search(cases[c][2], text, re.I))
     first=ok and not fails

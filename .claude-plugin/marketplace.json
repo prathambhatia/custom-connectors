@@ -8,6 +8,11 @@
       "name": "custom-connectors",
       "source": "./plugins/custom-connectors",
       "description": "Slack, Fathom, ClickUp, Vercel, AWS, Chrome DevTools and Figma connectors that replace their MCPs with direct calls, using your own tokens from the macOS Keychain"
+    },
+    {
+      "name": "google-workspace",
+      "source": "./plugins/google-workspace",
+      "description": "Optional, opt-in: Drive, Docs, Sheets, Slides, Gmail, Calendar and Tasks via the Google REST APIs with your own OAuth login. Needs a one-time Google Cloud setup. Not installed by custom-connectors."
     }
   ],
   "description": "Connectors that replace the Slack, Fathom, ClickUp, Vercel, AWS, Chrome DevTools and Figma MCPs with lightweight skills"
